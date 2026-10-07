@@ -1,0 +1,662 @@
+:root {
+    --background: #faf7f2;
+    --text: #302a3b;
+    --muted: #736c7e;
+    --accent: #7455a5;
+    --accent-dark: #5c4089;
+    --border: #e9e1ee;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at 85% 20%, #ece3f6 0, transparent 35%),
+        var(--background);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 5px;
+}
+
+.site-header,
+.page-content,
+.site-footer {
+    width: min(1120px, calc(100% - 40px));
+    margin-inline: auto;
+}
+
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-block: 28px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 750;
+}
+
+.brand span {
+    color: var(--accent);
+    font-size: 30px;
+}
+
+.nav-link {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.nav-link:hover {
+    color: var(--accent);
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    gap: 70px;
+    padding-block: 75px 100px;
+}
+
+.eyebrow,
+.preview-label {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 2px;
+}
+
+h1 {
+    margin: 20px 0;
+    font-size: clamp(36px, 4.5vw, 58px);
+    line-height: 1.12;
+    letter-spacing: -2px;
+}
+
+h1 span {
+    color: var(--accent);
+}
+
+.hero-description {
+    max-width: 490px;
+    margin-bottom: 30px;
+    color: var(--muted);
+    font-size: 17px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 15px 23px;
+    border-radius: 18px;
+    font-size: 14px;
+    font-weight: 650;
+    transition: background 180ms ease, transform 180ms ease;
+}
+
+.button-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 10px 25px rgb(116 85 165 / 18%);
+}
+
+.button-primary:hover {
+    background: var(--accent-dark);
+    transform: translateY(-2px);
+}
+
+.capsule-preview {
+    padding: 38px;
+    border: 1px solid rgb(255 255 255 / 90%);
+    border-radius: 32px;
+    background: rgb(255 255 255 / 65%);
+    box-shadow: 0 25px 70px rgb(77 49 111 / 10%);
+    backdrop-filter: blur(16px);
+    transform: rotate(3deg);
+}
+
+.envelope {
+    margin-block: 16px;
+    color: var(--accent);
+    font-size: 90px;
+    line-height: 1.2;
+}
+
+.capsule-preview h2 {
+    margin-bottom: 12px;
+    font-size: 23px;
+    line-height: 1.3;
+}
+
+.capsule-preview p {
+    color: var(--muted);
+}
+
+.preview-badge {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #eee6f6;
+    color: var(--accent);
+    font-size: 12px;
+}
+
+.how-section {
+    padding-block: 20px 70px;
+    scroll-margin-top: 30px;
+}
+
+.how-section > h2 {
+    margin: 12px 0 30px;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 1.3;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.step-card {
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background: rgb(255 255 255 / 55%);
+}
+
+.step-number {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.step-card h3 {
+    margin-bottom: 10px;
+    font-size: 19px;
+}
+
+.step-card p {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.site-footer {
+    padding-block: 25px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    .hero {
+        grid-template-columns: 1fr;
+        gap: 45px;
+        padding-block: 40px 60px;
+    }
+
+    .capsule-preview {
+        transform: none;
+    }
+
+    .steps {
+        grid-template-columns: 1fr;
+    }
+
+    .site-header {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .button {
+        transition: none;
+    }
+
+    .button-primary:hover {
+        transform: none;
+    }
+}
+/* Fundal și structură */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background:
+        radial-gradient(
+            ellipse at 85% 15%,
+            rgb(222 206 243 / 65%),
+            transparent 42%
+        ),
+        radial-gradient(
+            ellipse at 5% 70%,
+            rgb(248 225 215 / 45%),
+            transparent 38%
+        ),
+        var(--background);
+}
+
+.page-content {
+    flex: 1;
+}
+
+/* Header translucid */
+
+.site-header {
+    margin-top: 18px;
+    padding: 16px 22px;
+    border: 1px solid rgb(255 255 255 / 85%);
+    border-radius: 24px;
+    background: rgb(255 255 255 / 45%);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px rgb(77 49 111 / 4%);
+}
+
+.brand {
+    letter-spacing: -0.6px;
+}
+
+.brand span {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: #eee6f6;
+    font-size: 26px;
+}
+
+.nav-link {
+    padding: 9px 14px;
+    border-radius: 12px;
+    transition:
+        background 180ms ease,
+        color 180ms ease;
+}
+
+.nav-link:hover {
+    background: #eee6f6;
+}
+
+/* Introducere */
+
+.hero > * {
+    min-width: 0;
+}
+
+.hero-content > .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 13px;
+    border: 1px solid #e5daef;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 55%);
+    font-size: 10px;
+    letter-spacing: 1.6px;
+}
+
+.hero-content > .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgb(116 85 165 / 9%);
+}
+
+h1 {
+    font-weight: 750;
+    text-wrap: balance;
+}
+
+.hero-description {
+    line-height: 1.85;
+}
+
+/* Bouton principal */
+
+.button {
+    border: 1px solid transparent;
+    transition:
+        background 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.button-primary {
+    background: linear-gradient(
+        135deg,
+        #8462b6,
+        var(--accent)
+    );
+    box-shadow:
+        0 10px 25px rgb(116 85 165 / 18%),
+        inset 0 1px 0 rgb(255 255 255 / 20%);
+}
+
+.button-primary:hover {
+    background: linear-gradient(
+        135deg,
+        var(--accent),
+        var(--accent-dark)
+    );
+    box-shadow: 0 15px 32px rgb(116 85 165 / 25%);
+    transform: translateY(-3px);
+}
+
+.button-primary:active {
+    transform: translateY(0);
+}
+
+.button span {
+    transition: transform 180ms ease;
+}
+
+.button:hover span {
+    transform: translate(2px, -2px);
+}
+
+/* Cardul capsulei */
+
+.capsule-preview {
+    position: relative;
+    background: linear-gradient(
+        145deg,
+        rgb(255 255 255 / 85%),
+        rgb(255 255 255 / 55%)
+    );
+    box-shadow:
+        0 25px 70px rgb(77 49 111 / 10%),
+        inset 0 1px 0 white;
+    transition:
+        transform 250ms ease,
+        box-shadow 250ms ease;
+}
+
+/* Mic detaliu asemănător unei benzi decorative */
+
+.capsule-preview::before {
+    content: "";
+    position: absolute;
+    top: -13px;
+    left: calc(50% - 39px);
+    width: 78px;
+    height: 27px;
+    border: 1px solid rgb(116 85 165 / 10%);
+    border-radius: 5px;
+    background: rgb(215 196 236 / 65%);
+    backdrop-filter: blur(4px);
+    transform: rotate(-7deg);
+    pointer-events: none;
+}
+
+.capsule-preview:hover {
+    transform: rotate(1deg) translateY(-5px);
+    box-shadow: 0 30px 80px rgb(77 49 111 / 15%);
+}
+
+.preview-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1.7px;
+}
+
+.envelope {
+    display: grid;
+    place-items: center;
+    width: 110px;
+    height: 110px;
+    margin-block: 26px;
+    border: 1px solid #e8dcf2;
+    border-radius: 28px;
+    background: linear-gradient(145deg, #f5effb, #e9def5);
+    font-size: 72px;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%);
+}
+
+.capsule-preview h2 {
+    letter-spacing: -0.6px;
+}
+
+.capsule-preview p {
+    line-height: 1.8;
+}
+
+.preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e4d7ef;
+}
+
+.preview-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+/* Cardurile cu pași */
+
+.how-section > h2 {
+    max-width: 650px;
+    letter-spacing: -0.8px;
+    text-wrap: balance;
+}
+
+.step-card {
+    position: relative;
+    background: rgb(255 255 255 / 65%);
+    box-shadow: 0 5px 20px rgb(77 49 111 / 3%);
+    transition:
+        transform 200ms ease,
+        box-shadow 200ms ease,
+        border-color 200ms ease;
+}
+
+.step-card:hover {
+    border-color: #d5c2e8;
+    box-shadow: 0 16px 35px rgb(77 49 111 / 8%);
+    transform: translateY(-5px);
+}
+
+.step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    background: #eee6f6;
+}
+
+.step-card:nth-child(2) .step-number {
+    background: #fae9de;
+    color: #946044;
+}
+
+.step-card:nth-child(3) .step-number {
+    background: #e7eee3;
+    color: #58734d;
+}
+
+.step-card h3 {
+    margin-top: 22px;
+    letter-spacing: -0.4px;
+}
+
+.step-card p {
+    line-height: 1.8;
+}
+
+/* Selecția textului și footer */
+
+::selection {
+    background: #e5d5f3;
+    color: #302a3b;
+}
+
+.site-footer {
+    padding-block: 28px;
+}
+
+/* Ajustări pentru telefon */
+
+@media (max-width: 760px) {
+    .site-header {
+        padding: 14px 16px;
+        border-radius: 20px;
+    }
+
+    .brand {
+        font-size: 18px;
+    }
+
+    .nav-link {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .capsule-preview {
+        width: 100%;
+        max-width: 460px;
+        margin-inline: auto;
+        padding: 30px;
+    }
+
+    .capsule-preview:hover {
+        transform: none;
+    }
+
+    h1 {
+        letter-spacing: -1.4px;
+    }
+
+    .step-card {
+        padding: 25px;
+    }
+}
+
+/* Respectă preferința pentru mișcare redusă */
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-link,
+    .button,
+    .button span,
+    .capsule-preview,
+    .step-card {
+        transition: none;
+    }
+
+    .button-primary:hover,
+    .button-primary:active,
+    .button:hover span,
+    .step-card:hover {
+        transform: none;
+    }
+
+    .capsule-preview:hover {
+        transform: rotate(3deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 760px) {
+    .capsule-preview:hover {
+        transform: none;
+    }
+}
+/* Text mai fin și proporții mai discrete */
+
+h1 {
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 600;
+    letter-spacing: -1.5px;
+}
+
+.brand {
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.hero-description {
+    font-size: 16px;
+}
+
+.eyebrow,
+.preview-label {
+    font-weight: 600;
+}
+
+.capsule-preview h2 {
+    font-size: 21px;
+    font-weight: 600;
+}
+
+.how-section > h2 {
+    font-size: clamp(23px, 2.8vw, 29px);
+    font-weight: 600;
+}
+
+.step-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.step-number,
+.button {
+    font-weight: 600;
+}
+/* Spațiere mai compactă */
+
+.hero {
+    padding-block: 40px 55px;
+}
+
+.how-section {
+    padding-block: 10px 45px;
+}
+
+.how-section > h2 {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 760px) {
+    .hero {
+        padding-block: 30px 40px;
+        gap: 35px;
+    }
+}
