@@ -1018,3 +1018,26 @@ h1 {
         gap: 18px;
     }
 }
+.capsule-actions {
+    margin-top: 18px;
+}
+
+.capsule-edit-link {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 11px;
+    background: #eee6f6;
+    color: var(--accent-dark);
+    font-size: 12px;
+    transition: background 180ms ease;
+}
+
+.capsule-edit-link:hover {
+    background: #e3d5f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .capsule-edit-link {
+        transition: none;
+    }
+}

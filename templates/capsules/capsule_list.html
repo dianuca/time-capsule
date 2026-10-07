@@ -18,32 +18,43 @@
 
         <div class="capsule-grid">
             {% for capsule in capsules %}
-                <article class="capsule-card">
-                    <span class="capsule-status">
-                        {% if capsule.is_draft %}
-                            Ciornă
-                        {% elif capsule.first_opened_at %}
-                            Deschisă
-                        {% elif capsule.is_available %}
-                            Disponibilă pentru deschidere
-                        {% else %}
-                            Sigilată
-                        {% endif %}
-                    </span>
-
-                    <h2>{{ capsule.title }}</h2>
-
-                    {% if capsule.description %}
-                        <p>{{ capsule.description }}</p>
+            <article class="capsule-card">
+                <span class="capsule-status">
+                    {% if capsule.is_draft %}
+                        Ciornă
+                    {% elif capsule.first_opened_at %}
+                        Deschisă
+                    {% elif capsule.is_available %}
+                        Disponibilă pentru deschidere
+                    {% else %}
+                        Sigilată
                     {% endif %}
+                </span>
 
-                    <div class="capsule-date">
-                        Deschidere:
-                        <time datetime="{{ capsule.opens_at|date:'c' }}">
-                            {{ capsule.opens_at|date:"d.m.Y, H:i" }}
-                        </time>
+                <h2>{{ capsule.title }}</h2>
+
+                {% if capsule.description %}
+                    <p>{{ capsule.description }}</p>
+                {% endif %}
+
+                <div class="capsule-date">
+                    Deschidere:
+                    <time datetime="{{ capsule.opens_at|date:'c' }}">
+                        {{ capsule.opens_at|date:"d.m.Y, H:i" }}
+                    </time>
+                </div>
+
+                {% if capsule.is_draft %}
+                    <div class="capsule-actions">
+                        <a
+                            class="capsule-edit-link"
+                            href="{% url 'capsules:edit' capsule.pk %}"
+                        >
+                            Editează ciorna ↗
+                        </a>
                     </div>
-                </article>
+                {% endif %}
+            </article>
             {% empty %}
                 <div class="collection-empty">
                     <span class="empty-icon" aria-hidden="true">✉</span>
