@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Creează cont | Time Capsule{% endblock %}
+
+{% block content %}
+    <section class="auth-section">
+        <div class="auth-card">
+            <span class="eyebrow">PRIMUL MESAJ CĂTRE VIITOR</span>
+            <h1>Creează-ți contul</h1>
+            <p>Păstrează amintirile de astăzi pentru tine din viitor.</p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                {% for field in form %}
+                    <div class="form-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="help-text">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+
+                <button class="button button-primary" type="submit">
+                    Creează cont
+                </button>
+            </form>
+            <p class="auth-switch">
+                Ai deja un cont?
+                <a href="{% url 'accounts:login' %}">Intră în cont</a>
+            </p>
+        </div>
+    </section>
+{% endblock %}
