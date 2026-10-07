@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Acasă | Time Capsule{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <span class="eyebrow">AMINTIRI PENTRU VIITOR</span>
+
+            <h1>
+                O bucățică din prezent,
+                <span>păstrată pentru viitor.</span>
+            </h1>
+
+            <p class="hero-description">
+                Gânduri, fotografii și lucruri pe care nu vrei să le uiți.
+                Păstrează-le într-o capsulă și redescoperă-le
+                când va veni momentul.
+            </p>
+
+            <a class="button button-primary" href="#how-it-works">
+                Descoperă cum funcționează
+                <span aria-hidden="true">↗</span>
+            </a>
+        </div>
+
+        <div class="capsule-preview">
+            <span class="preview-label">O SCRISOARE CĂTRE VIITOR</span>
+            <div class="envelope" aria-hidden="true">✉</div>
+
+            <h2>Pentru mine, peste un an</h2>
+            <p>
+                Sper că ai avut curajul să începi lucrurile
+                la care visezi astăzi.
+            </p>
+
+            <span class="preview-badge">Exemplu de capsulă</span>
+        </div>
+    </section>
+
+    <section class="how-section" id="how-it-works">
+        <span class="eyebrow">TREI PAȘI SIMPLI</span>
+        <h2>Astăzi păstrezi. Într-o zi redescoperi.</h2>
+
+        <div class="steps">
+            <article class="step-card">
+                <span class="step-number">01</span>
+                <h3>Adună prezentul</h3>
+                <p>
+                    Scrie ce simți și adaugă amintirile
+                    care contează pentru tine.
+                </p>
+            </article>
+
+            <article class="step-card">
+                <span class="step-number">02</span>
+                <h3>Alege momentul</h3>
+                <p>
+                    Stabilește data deschiderii și sigilează
+                    capsula pentru viitor.
+                </p>
+            </article>
+
+            <article class="step-card">
+                <span class="step-number">03</span>
+                <h3>Întâlnește trecutul</h3>
+                <p>
+                    Revino la termen și descoperă mesajul
+                    lăsat de versiunea ta de astăzi.
+                </p>
+            </article>
+        </div>
+    </section>
+{% endblock %}
