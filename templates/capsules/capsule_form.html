@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Capsulă nouă | Time Capsule{% endblock %}
+{% block title %}
+    {% if is_edit %}Editează capsula{% else %}Capsulă nouă{% endif %}
+    | Time Capsule
+{% endblock %}
 
 {% block content %}
     <section class="auth-section">
         <div class="auth-card capsule-form-card">
             <span class="eyebrow">PĂSTREAZĂ PREZENTUL</span>
-            <h1>O capsulă nouă</h1>
+            <h1>
+                {% if is_edit %}
+                    Editează capsula
+                {% else %}
+                    O capsulă nouă
+                {% endif %}
+            </h1>
             <p>
                 Începe cu un gând. Poți reveni asupra lui
                 cât timp capsula este o ciornă.
@@ -31,9 +40,13 @@
                     Descrierea rămâne vizibilă după sigilare.
                 </p>
 
-                <button class="button button-primary" type="submit">
+            <button class="button button-primary" type="submit">
+                {% if is_edit %}
+                    Salvează modificările
+                {% else %}
                     Salvează ciorna
-                </button>
+                {% endif %}
+            </button>
             </form>
 
             <p class="auth-switch">

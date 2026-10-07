@@ -168,3 +168,114 @@ class CapsuleCreateTests(TestCase):
             "2030-01-15T10:00:00+00:00",
         )
 
+class CapsuleEditTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.owner = User.objects.create_user(
+            username="editor",
+            timezone="Europe/Bucharest",
+        )
+        self.other_user = User.objects.create_user(username="other_editor")
+        self.capsule = Capsule.objects.create(
+            owner=self.owner,
+            title="Titlul inițial",
+            description="Descriere inițială",
+            message="Mesaj inițial",
+            opens_at=timezone.now() + timedelta(days=30),
+        )
+        self.url = reverse(
+            "capsules:edit",
+            kwargs={"pk": self.capsule.pk},
+        )
+        local_date = self.capsule.opens_at.astimezone(
+            ZoneInfo(self.owner.timezone)
+        )
+        self.valid_data = {
+            "title": "Titlul modificat",
+            "description": "Descriere modificată",
+            "message": "Mesaj modificat",
+            "opens_at": local_date.strftime("%Y-%m-%dT%H:%M"),
+        }
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        response = self.client.post(self.url, self.valid_data)
+        self.assertRedirects(
+            response,
+            f"{reverse('accounts:login')}?next={self.url}",
+        )
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.title, "Titlul inițial")
+
+    def test_owner_sees_prefilled_form(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "capsules/capsule_form.html",
+        )
+        self.assertEqual(
+            response.context["form"].instance,
+            self.capsule,
+        )
+        self.assertContains(response, "Titlul inițial")
+        self.assertContains(response, "Salvează modificările")
+
+    def test_owner_can_update_draft_without_creating_another_capsule(self):
+        self.client.force_login(self.owner)
+        response = self.client.post(self.url, self.valid_data)
+        self.assertRedirects(response, reverse("capsules:list"))
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.title, "Titlul modificat")
+        self.assertEqual(self.capsule.message, "Mesaj modificat")
+        self.assertEqual(self.capsule.owner, self.owner)
+        self.assertEqual(Capsule.objects.count(), 1)
+
+    def test_other_user_cannot_view_or_update_capsule(self):
+        self.client.force_login(self.other_user)
+        get_response = self.client.get(self.url)
+        post_response = self.client.post(self.url, self.valid_data)
+        self.assertEqual(get_response.status_code, 404)
+        self.assertEqual(post_response.status_code, 404)
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.title, "Titlul inițial")
+
+    def test_sealed_capsule_cannot_be_viewed_in_editor_or_updated(self):
+        self.capsule.sealed_at = timezone.now()
+        self.capsule.save()
+        self.client.force_login(self.owner)
+        get_response = self.client.get(self.url)
+        post_response = self.client.post(self.url, self.valid_data)
+        self.assertEqual(get_response.status_code, 403)
+        self.assertEqual(post_response.status_code, 403)
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.title, "Titlul inițial")
+
+    def test_invalid_date_does_not_change_capsule(self):
+        self.client.force_login(self.owner)
+        local_past = (
+            timezone.now() - timedelta(days=1)
+        ).astimezone(ZoneInfo(self.owner.timezone))
+        data = {
+            **self.valid_data,
+            "opens_at": local_past.strftime("%Y-%m-%dT%H:%M"),
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("opens_at", response.context["form"].errors)
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.title, "Titlul inițial")
+
+    def test_owner_cannot_be_changed_through_form(self):
+        self.client.force_login(self.owner)
+        data = {
+            **self.valid_data,
+            "owner": self.other_user.pk,
+        }
+        response = self.client.post(self.url, data)
+
+        self.assertRedirects(response, reverse("capsules:list"))
+        self.capsule.refresh_from_db()
+        self.assertEqual(self.capsule.owner, self.owner)
+
+    
