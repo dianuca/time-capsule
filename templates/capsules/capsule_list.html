@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Capsulele mele | Time Capsule{% endblock %}
+
+{% block content %}
+    <section class="collection-section">
+        <div class="collection-heading">
+            <span class="eyebrow">COLECȚIA TA DE AMINTIRI</span>
+            <h1>Capsulele mele</h1>
+            <p>Fragmente din prezent, păstrate pentru mai târziu.</p>
+        </div>
+
+        <div class="capsule-grid">
+            {% for capsule in capsules %}
+                <article class="capsule-card">
+                    <span class="capsule-status">
+                        {% if capsule.is_draft %}
+                            Ciornă
+                        {% elif capsule.first_opened_at %}
+                            Deschisă
+                        {% elif capsule.is_available %}
+                            Disponibilă pentru deschidere
+                        {% else %}
+                            Sigilată
+                        {% endif %}
+                    </span>
+
+                    <h2>{{ capsule.title }}</h2>
+
+                    {% if capsule.description %}
+                        <p>{{ capsule.description }}</p>
+                    {% endif %}
+
+                    <div class="capsule-date">
+                        Deschidere:
+                        <time datetime="{{ capsule.opens_at|date:'c' }}">
+                            {{ capsule.opens_at|date:"d.m.Y, H:i" }}
+                        </time>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="collection-empty">
+                    <span class="empty-icon" aria-hidden="true">✉</span>
+                    <h2>Prima ta amintire începe aici.</h2>
+                    <p>
+                        Nu ai încă nicio capsulă.
+                        În curând vei putea scrie primul mesaj către viitor.
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
