@@ -966,3 +966,55 @@ h1 {
         transform: none;
     }
 }
+.collection-actions {
+    margin-bottom: 25px;
+}
+
+.capsule-form-card {
+    max-width: 650px;
+}
+
+.form-field textarea {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: white;
+    color: var(--text);
+    font: inherit;
+    line-height: 1.7;
+    resize: vertical;
+}
+
+.form-field textarea:focus {
+    border-color: var(--accent);
+    outline: 3px solid rgb(116 85 165 / 12%);
+}
+.collection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.collection-header .collection-heading {
+    margin-bottom: 0;
+}
+
+.collection-header .collection-heading p {
+    margin-bottom: 0;
+}
+
+.collection-header > .button {
+    flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+    .collection-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+}

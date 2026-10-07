@@ -4,10 +4,16 @@
 
 {% block content %}
     <section class="collection-section">
-        <div class="collection-heading">
-            <span class="eyebrow">COLECȚIA TA DE AMINTIRI</span>
-            <h1>Capsulele mele</h1>
-            <p>Fragmente din prezent, păstrate pentru mai târziu.</p>
+        <div class="collection-header">
+            <div class="collection-heading">
+                <span class="eyebrow">COLECȚIA TA DE AMINTIRI</span>
+                <h1>Capsulele mele</h1>
+                <p>Fragmente din prezent, păstrate pentru mai târziu.</p>
+            </div>
+
+            <a class="button button-primary" href="{% url 'capsules:create' %}">
+                + Capsulă nouă
+            </a>
         </div>
 
         <div class="capsule-grid">
@@ -44,7 +50,7 @@
                     <h2>Prima ta amintire începe aici.</h2>
                     <p>
                         Nu ai încă nicio capsulă.
-                        În curând vei putea scrie primul mesaj către viitor.
+                        Scrie primul tău mesaj către viitor.
                     </p>
                 </div>
             {% endfor %}
