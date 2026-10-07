@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Capsulă nouă | Time Capsule{% endblock %}
+
+{% block content %}
+    <section class="auth-section">
+        <div class="auth-card capsule-form-card">
+            <span class="eyebrow">PĂSTREAZĂ PREZENTUL</span>
+            <h1>O capsulă nouă</h1>
+            <p>
+                Începe cu un gând. Poți reveni asupra lui
+                cât timp capsula este o ciornă.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                {% for field in form %}
+                    <div class="form-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+
+                <p class="help-text">
+                    Ora este interpretată în fusul
+                    {{ user.timezone }}.
+                    Descrierea rămâne vizibilă după sigilare.
+                </p>
+
+                <button class="button button-primary" type="submit">
+                    Salvează ciorna
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                <a href="{% url 'capsules:list' %}">
+                    Înapoi la capsulele mele
+                </a>
+            </p>
+        </div>
+    </section>
+{% endblock %}
