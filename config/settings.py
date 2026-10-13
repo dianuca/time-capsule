@@ -12,21 +12,27 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
+from .environment import security_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@fk)7pm5e!j9eo&uu7r8s&b(ex*w37=_0h=2px@=x286sbb6x2'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+security = security_settings(os.environ)
+SECRET_KEY = security["SECRET_KEY"]
+DEBUG = security["DEBUG"]
+ALLOWED_HOSTS = security["ALLOWED_HOSTS"]
+CSRF_TRUSTED_ORIGINS = security["CSRF_TRUSTED_ORIGINS"]
+SECURE_SSL_REDIRECT = security["SECURE_SSL_REDIRECT"]
+SESSION_COOKIE_SECURE = security["SESSION_COOKIE_SECURE"]
+CSRF_COOKIE_SECURE = security["CSRF_COOKIE_SECURE"]
+SECURE_HSTS_SECONDS = security["SECURE_HSTS_SECONDS"]
+SECURE_HSTS_INCLUDE_SUBDOMAINS = security["SECURE_HSTS_INCLUDE_SUBDOMAINS"]
+SECURE_HSTS_PRELOAD = security["SECURE_HSTS_PRELOAD"]
+SECURE_PROXY_SSL_HEADER = security["SECURE_PROXY_SSL_HEADER"]
+USE_X_FORWARDED_HOST = False
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
 
 
 # Application definition
@@ -119,6 +125,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static'] 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Never expose this directory via static/media URL routing.
 PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"

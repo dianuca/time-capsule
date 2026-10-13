@@ -75,6 +75,40 @@ make migrate
 
 Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale. Verifică configurația reală a variabilelor de mediu înainte de pornire; nu înlocui secretele cu valori publice pentru a elimina o eroare.
 
+## Configurație locală și de producție
+
+Aplicația citește direct variabilele de mediu ale procesului; fișierele `.env` nu sunt încărcate automat. Nu este necesară o dependență suplimentară. În lipsa variabilelor, pornește în mod local cu `DEBUG=True`, HTTP, email în consolă și hosturi limitate la `localhost`, `127.0.0.1` și `[::1]`. Cheia implicită este publică și exclusiv pentru dezvoltare. Înlocuirea cheii locale folosite anterior poate invalida sesiunile și linkurile vechi de resetare/confirmare; autentifică-te din nou și solicită un link nou, fără a recrea baza de date.
+
+| Variabilă | Comportament |
+| --- | --- |
+| `DJANGO_DEBUG` | Implicit `true`; setează explicit `false` pe server. Valori acceptate: true/false, 1/0, yes/no, on/off. Valorile greșite opresc pornirea. |
+| `DJANGO_SECRET_KEY` | Obligatorie când DEBUG este false: cheie privată, aleatoare, de minimum 50 de caractere. Valorile goale, slabe sau cu prefixul `django-insecure-` sunt respinse. |
+| `DJANGO_ALLOWED_HOSTS` | Domenii/IP separate prin virgulă, fără schemă, port, cale sau wildcard `*`. Obligatorie în producție. Prefixul `.example.com` este permis doar când chiar dorești domeniul și toate subdomeniile lui. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Opțional; origini exacte separate prin virgulă, de exemplu `https://frontend.example.com`. Producția acceptă numai HTTPS, fără cale sau wildcard. Nu este necesară pentru formulare servite de aceeași origine. Nu înlocuiește ALLOWED_HOSTS. |
+| `DJANGO_TRUST_PROXY_HEADERS` | Implicit `false`. Activează numai pentru un reverse proxy controlat care elimină antetele primite de la client și setează corect `X-Forwarded-Proto`. Hostul nu se citește din `X-Forwarded-Host`. |
+| `DJANGO_HSTS_SECONDS` | Implicit 0 local, 3600 în producție; întreg nenegativ. Subdomeniile și preload sunt dezactivate intenționat până la validarea infrastructurii. |
+
+Cu `DJANGO_DEBUG=false`, redirectul HTTP → HTTPS și flagurile Secure pentru cookie-urile de sesiune și CSRF sunt activate. Configurația invalidă oprește pornirea, în loc să folosească cheia locală. Păstrează aceeași cheie privată între restarturi și între procesele serverului; nu o regenera la fiecare pornire.
+
+Exemplu PowerShell pentru verificarea configurației de producție într-un terminal separat (înlocuiește domeniul exemplu cu domeniul real):
+
+```powershell
+$env:DJANGO_DEBUG = "false"
+$env:DJANGO_ALLOWED_HOSTS = "capsule.example.com"
+$env:DJANGO_SECRET_KEY = & .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(64))"
+.\.venv\Scripts\python.exe manage.py check --deploy --tag security
+.\.venv\Scripts\python.exe manage.py check --deploy
+.\.venv\Scripts\python.exe manage.py collectstatic --noinput
+```
+
+Acest exemplu generează o cheie temporară pentru verificare, fără să o afișeze. La instalarea reală generează cheia o singură dată și păstreaz-o în mecanismul de secrete al hostingului, injectată în mediul procesului. În shell POSIX, variabilele se setează cu `export`, de exemplu `export DJANGO_DEBUG=false`; aceleași nume și reguli se aplică pe toate platformele. Închide terminalul de probă pentru a reveni la mediul local; nu dezactiva HTTPS pe server pentru a testa HTTP.
+
+`check --deploy --tag security` păstrează avertismentele `security.W005` și `security.W021` pentru subdomenii/preload, fără a le suprima. `check --deploy` complet raportează și `mail.E001` cât timp backendul este consola; configurarea SMTP este amânată, deci verificarea completă de lansare nu este încă finalizată. Comenzile de verificare nu trimit emailuri.
+
+Serverul va rula aplicația prin `config.wsgi:application` sau `config.asgi:application`, cu un server WSGI/ASGI și process manager alese la etapa de hosting, nu prin `runserver`. Reverse proxy-ul trebuie să termine TLS, să păstreze hostul corect și să gestioneze sigur antetele; înainte de activarea încrederii în proxy verifică faptul că aplicația nu poate fi accesată direct din internet. Altfel pot apărea redirecturi în buclă sau pot fi acceptate antete falsificate.
+
+`collectstatic` colectează exclusiv resursele publice în `staticfiles/` (`STATIC_ROOT`), pe care le servește hostingul/proxy-ul. Nu publica `private_media/`: fotografiile și avatarurile rămân accesibile numai prin endpointurile autentificate. PostgreSQL, volumele persistente, backup-urile, serviciul WSGI/ASGI și TLS real nu sunt încă instalate sau validate; nu s-a făcut deployment. Migrarea și backup-ul datelor existente trebuie planificate înainte de configurarea serverului real.
+
 ## Stadiu confirmat
 
 - [x] Setup Django, repository și branch-uri pentru funcționalități.
@@ -89,7 +123,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 176 de teste Django și 23 teste JavaScript trec, inclusiv 17 teste pentru verificarea emailului, 11 pentru resetarea parolei și 6 JavaScript pentru focusul modalelor. Migrarea `accounts.0003` este aplicată local. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check` și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 191 de teste Django și 23 teste JavaScript trec, inclusiv 15 teste pentru configurația de producție, 17 pentru verificarea emailului, 11 pentru resetarea parolei și 6 JavaScript pentru focusul modalelor. Migrarea `accounts.0003` este aplicată local; configurația de producție nu necesită migrări noi. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check` și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări, iar `collectstatic --dry-run --noinput` trece. Check-ul de deployment a fost verificat într-un proces separat cu o cheie temporară generată în memorie: rămân `mail.E001`, `security.W005` și `security.W021`, explicate în secțiunea de configurare. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
 Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului, ștergerea contului, resetarea parolei și verificarea emailului sunt implementate. Notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
@@ -268,10 +302,12 @@ Validare: 12 teste noi pentru confirmare, parolă, CSRF, metode HTTP, izolarea c
 - [x] Adaptări mobile în CSS: câmpuri de 16px pentru a evita zoom-ul automat la focalizare în iOS, controale tactile principale de minimum 44px, modal limitat la viewport și scroll intern pentru ecrane mici; scrisoarea poate fi redimensionată vertical pe mobil. Galerie păstrată cu proporții originale și `scale-down`.
 - [ ] Validare manuală desktop/mobil și cu cititor de ecran, inclusiv zoom 200%, tastatură virtuală și dispozitive tactile reale.
 - [ ] HTTPS, DEBUG=False, ALLOWED_HOSTS și configurația secretelor pentru producție.
+- [x] Configurație prin variabile de mediu, validare la pornire, redirect HTTPS, cookie-uri Secure și încredere explicită în proxy, acoperite de teste. Documentație pentru verificarea configurației și `collectstatic`.
+- [ ] Validare pe domeniul și hostingul real: certificat TLS, antete proxy, fișiere statice și verificări complete de deployment, inclusiv email.
 - [ ] PostgreSQL, storage privat persistent și sarcina periodică configurate.
 - [ ] Backup pentru DB și fișiere; restaurare verificată.
 - [ ] Documentează retenția backup-urilor, limitele stocării și ștergerea datelor.
-- [ ] README cu setup reproductibil și configurație email; `.env.example` fără secrete dacă proiectul folosește .env.
+- [x] README cu setup reproductibil, variabile de mediu pentru configurația de producție și email. Proiectul nu încarcă fișiere `.env`; nu este necesar un `.env.example`.
 - [ ] Testele și verificările de producție relevante trec.
 
 Verificările de cod și testele cu DOM simulat nu înlocuiesc verificarea vizuală sau arborele de accesibilitate al browserului. Parcurge cu Tab/Shift+Tab linkul de salt, meniurile, modalele și galeria; Escape trebuie să închidă modalul și să readucă focusul pe acțiunea inițială, inclusiv după navigarea între modale. Trimite un formular cu un câmp invalid și apoi cu eroare generală: focusul trebuie să ajungă la problema afișată. Pe mobil verifică lățimi de 320/375/768px, orientare landscape și tastatura deschisă, fără overflow orizontal sau controale inaccesibile. Verifică și preferința de mișcare redusă. Checklist-ul general UX rămâne deschis până la aceste verificări manuale.
