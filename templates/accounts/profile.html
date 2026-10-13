@@ -37,11 +37,9 @@
             <div class="editor-actions"><a class="button button-quiet" href="{% url 'capsules:list' %}">Înapoi la capsule</a><button class="button button-primary" type="submit">Salvează preferințele</button></div>
         </form>
         <div class="profile-email-status">
-            <span class="eyebrow">ADRESA TA DE EMAIL</span>
-            <p>{% if user.email_is_verified %}<strong>Email confirmat</strong>{% else %}<strong>Email neconfirmat</strong>{% endif %}</p>
-            <p>{% if user.email_is_verified %}Adresa este pregătită pentru viitoarele notificări.{% else %}Confirmă adresa pentru a putea primi notificări când acestea vor fi activate.{% endif %}</p>
-            {% if user.pending_email %}<p>Confirmare în așteptare pentru <strong>{{ user.pending_email }}</strong>.</p>{% endif %}
-            <a class="button button-quiet" data-capsule-popup href="{% url 'accounts:email_settings' %}">{% if user.email_is_verified %}Schimbă emailul{% else %}Confirmă sau schimbă emailul{% endif %}</a>
+            <span>{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span>
+            <a data-capsule-popup href="{% url 'accounts:email_settings' %}" aria-label="{% if user.email_is_verified %}Schimbă adresa de email{% else %}Confirmă sau schimbă adresa de email{% endif %}">{% if user.email_is_verified %}Schimbă{% else %}Confirmă / schimbă{% endif %}</a>
+            {% if user.pending_email %}<small>Confirmare în așteptare: {{ user.pending_email }}</small>{% endif %}
         </div>
         <div class="profile-danger-zone"><a class="capsule-delete-link" data-capsule-popup href="{% url 'accounts:delete' %}">Șterge contul</a></div>
         </div>
