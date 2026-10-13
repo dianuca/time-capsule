@@ -36,7 +36,8 @@
             {% if query %}<a class="search-reset" href="?state={{ selected_state }}">Resetează</a>{% endif %}
         </form>
         </div>
-        <div class="capsule-grid">
+        <p class="search-status visually-hidden" role="status" aria-live="polite"></p>
+        <div class="capsule-grid" data-result-count="{{ capsules|length }}">
             {% for capsule in capsules %}
             <article class="capsule-card state-{{ capsule.ui_state }} theme-{{ capsule.theme }}">
                 <div class="capsule-card-top">

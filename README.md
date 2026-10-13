@@ -264,6 +264,8 @@ Flux dorit (planificat, neimplementat): creatorul introduce emailul destinatarul
 
 Căutarea este în dreapta filtrelor pe desktop, cu buton discret de tip lupă și etichetă accesibilă. Sub 1000px se așază sub filtre pentru a evita înghesuirea.
 
+Căutarea este live: după 300ms de la tastare actualizează cardurile și numărătorile fără reîncărcare. Păstrează focusul și filtrul selectat, anulează cererile vechi și ignoră răspunsurile întârziate. Filtrele și resetarea funcționează tot fără reîncărcare; URL-ul reflectă selecția curentă. Starea căutării este anunțată pentru cititoarele de ecran. Fără JavaScript rămân funcționale formularul GET și linkurile normale. Verificare manuală: tastare rapidă, ștergerea textului, schimbarea filtrului, resetare și conexiune întreruptă.
+
 Implementat pe `feature/capsule-personality`, după popularea cu date demo:
 
 - [x] Previzualizare discretă de plic pe card, adaptată stării capsulei.
