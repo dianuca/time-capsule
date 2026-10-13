@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 113 teste Django trec, inclusiv 6 teste noi pentru paginare; cele 14 teste JavaScript pentru galerie și căutare/paginare trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 125 de teste Django trec, inclusiv 12 teste noi pentru profil; cele 14 teste JavaScript pentru galerie și căutare/paginare trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private și reflecțiile sunt implementate. Setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile și setările profilului sunt implementate. Resetarea parolei, ștergerea contului, verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -213,9 +213,9 @@ Colecția afișează 12 capsule pe pagină, ordonate descrescător după `create
 
 Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea, fără reload; căutarea și schimbarea filtrului pornesc de la pagina 1. Câmpul de căutare își păstrează focusul la tastare; navigarea între pagini mută focusul la rezultate. Fără JavaScript funcționează linkurile GET. Testele JavaScript: `node --test static/js/tests/*.test.cjs` (14 scenarii, DOM simulat). Verificare manuală pe desktop/mobil: paginile 1/2 pentru datele demo, căutare din pagina 2, filtrare, resetare, navigare cu tastatura și ștergerea ultimei capsule de pe o pagină. Browserul nu a fost verificat vizual în această etapă.
 
-### 7. Cont, parole și notificări - setările profilului sunt următoarea prioritate
+### 7. Cont, parole și notificări - resetarea parolei este următoarea prioritate
 
-- [ ] Setări profil: nume, fus orar validat și preferință email.
+- [x] Setări profil: prenume/nume, fus orar IANA validat și preferință email.
 - [ ] Resetare parolă prin email și template-uri coerente vizual.
 - [ ] Ștergere cont cu confirmare și eliminarea datelor/fișierelor asociate.
 - [ ] Definește și implementează verificarea adresei de email înainte de notificări; tratează schimbarea adresei și eventualele duplicate fără pierderea conturilor existente.
@@ -223,6 +223,12 @@ Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea,
 - [ ] Retry pentru erori; limite și idempotență pentru a reduce duplicatele. Preferința dezactivată oprește emailurile.
 - [ ] Emailul conține un link, nu conținutul privat al capsulei.
 - [ ] Teste pentru resetare, setări, ștergere, notificări scadente, retry și reexecutare.
+
+Profilul se deschide din linkul cu numele utilizatorului și „Profil”, în header, ca modal. Salvarea actualizează numele din header și pagina curentă, păstrând filtrul, căutarea și pagina colecției. Fără JavaScript este disponibil formularul normal la `/accounts/profile/`. GET afișează valorile existente; numai POST cu CSRF modifică datele. Revenirea după salvare acceptă numai URL-uri locale sau ale aceluiași host, validate pe server.
+
+Fusurile orare provin din `zoneinfo.available_timezones()`; valorile necunoscute sunt respinse. Schimbarea fusului modifică doar afișarea și interpretarea intrărilor viitoare, fără a muta momentele capsulelor deja stocate în UTC. Testele verifică inclusiv orele ambigue/inexistente la schimbarea orei. Preferința email este salvată, dar serviciul de notificări nu este încă implementat. Emailul, username-ul, parola și permisiunile nu pot fi modificate prin acest formular; sunt salvate explicit doar cele patru câmpuri de profil.
+
+Validare: 12 teste noi pentru autorizare, CSRF, validare, preferință, revenire sigură, izolarea utilizatorilor și integrarea fusului orar. Total: 125 de teste Django și 14 teste JavaScript trec; nu sunt necesare migrări. Verificarea vizuală rămâne manuală: deschide „Profil” din pagina 2 a colecției cu un filtru/căutare, schimbă numele, fusul orar și preferința, salvează și verifică header-ul, păstrarea navigării și datele capsulelor; verifică și anularea, o eroare de validare și layout-ul mobil.
 
 ### 8. Lansare V1
 

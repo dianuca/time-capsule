@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Profilul tău | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface profile-settings">
+        <span class="eyebrow">SPAȚIUL TĂU PERSONAL</span>
+        <h1 id="capsule-heading">Profilul tău</h1>
+        <p>Câteva detalii care fac acest loc al tău.</p>
+        <form method="post" action="{% url 'accounts:profile' %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ next_url }}" data-profile-return>
+            {{ form.non_field_errors }}
+            <div class="profile-name-fields">
+                <div class="form-field">{{ form.first_name.label_tag }}{{ form.first_name }}{{ form.first_name.errors }}</div>
+                <div class="form-field">{{ form.last_name.label_tag }}{{ form.last_name }}{{ form.last_name.errors }}</div>
+            </div>
+            <div class="form-field">{{ form.timezone.label_tag }}{{ form.timezone }}{{ form.timezone.errors }}<p class="help-text" id="{{ form.timezone.id_for_label }}_helptext">{{ form.timezone.help_text }}</p></div>
+            <label class="profile-email-toggle">{{ form.email_notifications_enabled }}<span>{{ form.email_notifications_enabled.label }}<small>Alege dacă vrei notificări când capsulele sunt pregătite de deschidere. Notificările prin email nu sunt încă active.</small></span></label>
+            {{ form.email_notifications_enabled.errors }}
+            <p class="profile-account-detail">Cont: {{ user.username }}{% if user.email %} · {{ user.email }}{% endif %}</p>
+            <div class="editor-actions"><a class="button button-quiet" data-popup-cancel href="{{ next_url }}">Anulează</a><button class="button button-primary" type="submit">Salvează preferințele</button></div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1238,6 +1238,17 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .letter-paper { position: relative; margin-top: 22px; padding: 28px 36px; border-radius: 3px 3px 14px 14px; background: linear-gradient(var(--card-tint, #faf3e7), #fffdf6 120px); box-shadow: 0 8px 24px #7455a50a; border: 1px solid #eee7d9; border-top: 3px solid var(--envelope-edge, #c9b5df); }
 .letter-written { margin: 0 0 20px; }
 .reflection-summary { margin-top: 24px; padding: 20px; border: 1px solid var(--envelope-edge, #c9b5df); border-radius: 16px; background: linear-gradient(135deg, var(--card-tint, #f2ecfa), #fffdf980); }
+.profile-settings { max-width: 650px; }
+.capsule-dialog:has(.profile-settings) { max-width: 720px; }
+.profile-name-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.profile-settings select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 13px; background: #fff; color: var(--text); font: inherit; font-size: 14px; }
+.profile-settings select:focus-visible { outline: 3px solid #7455a51f; border-color: var(--accent); }
+.profile-email-toggle { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: #eee6f64d; cursor: pointer; font-size: 14px; }
+.profile-email-toggle input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--accent); flex-shrink: 0; }
+.profile-email-toggle small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.profile-account-detail { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.profile-settings button { font: inherit; font-size: 14px; cursor: pointer; }
+@media (max-width: 600px) { .profile-name-fields { grid-template-columns: 1fr; gap: 0; } }
 .reflection-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }
 .reflection-heading h2 { margin: 0; font-size: 19px; font-weight: 500; }
 .reflection-summary h3 { margin: 16px 0 6px; color: var(--accent-dark); font-size: 13px; font-weight: 500; }

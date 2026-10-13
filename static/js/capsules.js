@@ -77,6 +77,8 @@
         const surface = page.querySelector('.capsule-surface');
         if (!surface) throw new Error('Missing form');
         content.replaceChildren(surface);
+        const profileReturn = content.querySelector('[data-profile-return]');
+        if (profileReturn) profileReturn.value = window.location.pathname + window.location.search;
         document.dispatchEvent(new Event('capsule-form-ready'));
         updateCountdowns();
     }
@@ -148,6 +150,8 @@
                 if (!main) throw new Error('Missing page');
                 dialog.close();
                 document.querySelector('.page-content').replaceWith(main);
+                const header = page.querySelector('.header-nav');
+                if (header) document.querySelector('.header-nav').replaceWith(header);
                 prepareToasts();
                 window.history.replaceState(null, '', response.url);
                 main.querySelector('h1')?.setAttribute('tabindex', '-1');
