@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Șterge capsula | Time Capsule{% endblock %}
+
+{% block content %}
+    <section class="capsule-workspace">
+        <div class="capsule-surface delete-confirmation">
+            <span class="delete-symbol" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5" />
+                </svg>
+            </span>
+            <h1 id="capsule-heading">Renunți la această amintire?</h1>
+            <p>Capsula <strong>„{{ capsule.title }}”</strong> va fi ștearsă definitiv. Această acțiune nu poate fi anulată.</p>
+            <form method="post" action="{% url 'capsules:delete' capsule.pk %}">
+                {% csrf_token %}
+                <div class="editor-actions">
+                    <a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Anulează</a>
+                    <button class="button button-danger" type="submit">Șterge capsula</button>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}

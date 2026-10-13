@@ -970,8 +970,88 @@ h1 {
     margin-bottom: 25px;
 }
 
-.capsule-form-card {
-    max-width: 650px;
+.capsule-workspace { padding-block: 24px; }
+.capsule-surface { width: 100%; max-width: 1040px; margin-inline: auto; }
+.capsule-surface h1 {
+    margin: 10px 0;
+    font-size: clamp(24px, 3vw, 30px);
+    font-weight: 500;
+    letter-spacing: -0.8px;
+}
+.capsule-surface > p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.capsule-editor-form {
+    display: grid;
+    grid-template-columns: minmax(240px, .85fr) minmax(0, 1.4fr);
+    gap: 10px 28px;
+}
+.capsule-editor-form .form-field { margin: 0; min-width: 0; }
+.capsule-editor-form .field-message { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-direction: column; }
+.capsule-editor-form .field-message textarea { flex: 1; min-height: 0; height: 208px; line-height: 1.5; resize: none; }
+.capsule-editor-form .form-field input { padding: 9px 12px; }
+.capsule-editor-form > .help-text,
+.capsule-editor-form > .errorlist,
+.capsule-editor-form > .editor-actions { grid-column: 1 / -1; }
+.capsule-editor-form .help-text { margin: 0; }
+.editor-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 8px; }
+.editor-actions .button { font: inherit; font-size: 14px; cursor: pointer; }
+.button-quiet { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.button-danger { border: 1px solid #a34d61; background: #a34d61; color: #fff; }
+.button-danger:hover { background: #8d3e51; }
+.button:disabled { opacity: .6; cursor: wait; }
+.delete-confirmation { max-width: 460px; }
+.delete-confirmation strong { font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.delete-symbol { display: inline-grid; place-items: center; width: 56px; height: 56px; margin-bottom: 12px; border: 1px solid #e8c9d1; border-radius: 19px; background: linear-gradient(145deg, #fff6f8, #f0dce3); color: #a34d61; box-shadow: 0 6px 18px #a34d6112; }
+.delete-symbol svg { width: 24px; height: 24px; }
+.capsule-dialog {
+    width: min(1120px, calc(100% - 64px));
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    padding: 28px 36px;
+    border: 0;
+    outline: none;
+    border-radius: 24px;
+    background: radial-gradient(ellipse at top right, #ece3f780, transparent 65%), #fcfaf7;
+    color: var(--text);
+    box-shadow: 0 32px 100px #29203640, 0 8px 24px #2920361a, inset 0 1px 0 #fff;
+}
+.capsule-dialog[open] { animation: modal-appear 220ms ease-out; }
+.capsule-dialog:has(.delete-confirmation) { max-width: 520px; }
+.capsule-dialog::backdrop {
+    background: rgb(42 32 55 / 28%);
+    -webkit-backdrop-filter: blur(18px) saturate(.7);
+    backdrop-filter: blur(18px) saturate(.7);
+}
+.dialog-close { position: absolute; right: 14px; top: 14px; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid #e9e1ee; border-radius: 50%; background: #ffffffb3; color: var(--muted); font: inherit; font-size: 24px; line-height: 1; cursor: pointer; transition: background 150ms ease, color 150ms ease; }
+.dialog-close:hover { background: #eee6f6; color: var(--accent-dark); }
+.dialog-close:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.capsule-dialog .editor-actions { padding-top: 8px; margin-top: 0; border: 0; }
+.capsule-dialog .button:focus { outline: none; }
+.capsule-dialog .button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.capsule-dialog .form-field input,
+.capsule-dialog .form-field textarea { background: #ffffffb3; }
+@keyframes modal-appear {
+    from { opacity: 0; transform: translateY(10px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .capsule-dialog[open], .capsule-dialog::backdrop { animation: none; }
+    .dialog-close { transition: none; }
+}
+body:has(.capsule-dialog[open]) { overflow: hidden; }
+@supports not (backdrop-filter: blur(1px)) {
+    body:has(.capsule-dialog[open]) > :is(.site-header, .page-content, .site-footer) { filter: blur(12px); }
+}
+.toast-stack { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; max-width: calc(100% - 32px); }
+.toast { margin: 8px 0 0; padding: 14px 22px; border: 1px solid #d5dfd1; border-radius: 16px; background: #f4f8f1; color: #486044; box-shadow: 0 8px 30px #302a3b12; font-size: 14px; }
+.toast span { margin-right: 8px; }
+@media (max-width: 600px) {
+    .capsule-workspace { padding-block: 16px; }
+    .capsule-dialog { width: calc(100% - 24px); padding: 26px 20px 20px; }
+    .capsule-editor-form { grid-template-columns: 1fr; gap: 10px; }
+    .capsule-editor-form .field-message { grid-column: auto; grid-row: auto; }
+    .capsule-editor-form .field-message textarea { height: 100px; min-height: 100px; }
+    .capsule-editor-form .form-field input { padding: 8px 12px; }
+    .editor-actions { flex-wrap: wrap; }
 }
 
 .form-field textarea {
@@ -1020,7 +1100,14 @@ h1 {
 }
 .capsule-actions {
     margin-top: 18px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
+
+.capsule-delete-link { padding: 8px 12px; color: #a34d61; font-size: 12px; border-radius: 11px; }
+.capsule-delete-link:hover { background: #f5e5e9; }
 
 .capsule-edit-link {
     display: inline-block;

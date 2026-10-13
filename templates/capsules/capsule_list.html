@@ -11,7 +11,7 @@
                 <p>Fragmente din prezent, păstrate pentru mai târziu.</p>
             </div>
 
-            <a class="button button-primary" href="{% url 'capsules:create' %}">
+            <a class="button button-primary" data-capsule-popup href="{% url 'capsules:create' %}">
                 + Capsulă nouă
             </a>
         </div>
@@ -44,16 +44,18 @@
                     </time>
                 </div>
 
-                {% if capsule.is_draft %}
                     <div class="capsule-actions">
+                        {% if capsule.is_draft %}
                         <a
                             class="capsule-edit-link"
+                            data-capsule-popup
                             href="{% url 'capsules:edit' capsule.pk %}"
                         >
                             Editează ciorna ↗
                         </a>
+                        {% endif %}
+                        <a class="capsule-delete-link" data-capsule-popup href="{% url 'capsules:delete' capsule.pk %}">Șterge</a>
                     </div>
-                {% endif %}
             </article>
             {% empty %}
                 <div class="collection-empty">

@@ -7,6 +7,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("capsules/", views.capsule_list, name="list"),
     path("capsules/new/", views.capsule_create, name="create"),
+    path("capsules/<uuid:pk>/delete/", views.capsule_delete, name="delete"),
     path(
     "capsules/<uuid:pk>/edit/",
     views.capsule_edit,

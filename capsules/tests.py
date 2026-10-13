@@ -1,10 +1,105 @@
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import Capsule
 from zoneinfo import ZoneInfo
+from uuid import uuid4
+
+
+class CapsuleDeleteTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.owner = User.objects.create_user(username="delete_owner")
+        self.other = User.objects.create_user(username="delete_other")
+        self.capsule = Capsule.objects.create(
+            owner=self.owner,
+            title="Capsula de șters",
+            message="Conținut secret care nu trebuie expus",
+            opens_at=timezone.now() + timedelta(days=30),
+        )
+        self.url = reverse("capsules:delete", args=[self.capsule.pk])
+
+    def test_anonymous_get_and_post_redirect_to_login(self):
+        for method in (self.client.get, self.client.post):
+            with self.subTest(method=method.__name__):
+                self.assertRedirects(
+                    method(self.url),
+                    f"{reverse('accounts:login')}?next={self.url}",
+                )
+        self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+
+    def test_other_owner_including_staff_receives_404(self):
+        self.client.force_login(self.other)
+        for staff in (False, True):
+            self.other.is_staff = staff
+            self.other.save()
+            for method in (self.client.get, self.client.post):
+                with self.subTest(staff=staff, method=method.__name__):
+                    self.assertEqual(method(self.url).status_code, 404)
+        self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+
+    def test_get_confirms_without_deleting_or_exposing_locked_message(self):
+        self.capsule.sealed_at = timezone.now()
+        self.capsule.save()
+        self.client.force_login(self.owner)
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, "capsules/capsule_confirm_delete.html")
+        self.assertContains(response, self.capsule.title)
+        self.assertContains(response, "Anulează")
+        self.assertContains(response, reverse("capsules:list"))
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertNotContains(response, self.capsule.message)
+        self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+
+    def test_owner_can_delete_each_state_and_only_targeted_capsule(self):
+        other_capsule = Capsule.objects.create(
+            owner=self.other, title="Străină", opens_at=self.capsule.opens_at,
+        )
+        self.client.force_login(self.owner)
+        now = timezone.now()
+        for state in ("draft", "locked", "available", "opened"):
+            with self.subTest(state=state):
+                target = Capsule.objects.create(
+                    owner=self.owner, title=state,
+                    opens_at=now + timedelta(days=1) if state in ("draft", "locked") else now,
+                    sealed_at=None if state == "draft" else now,
+                    first_opened_at=now if state == "opened" else None,
+                )
+                url = reverse("capsules:delete", args=[target.pk])
+                listing = self.client.get(reverse("capsules:list"))
+                self.assertContains(listing, f'href="{url}"')
+                response = self.client.post(url, {"pk": self.capsule.pk}, follow=True)
+                self.assertRedirects(response, reverse("capsules:list"))
+                self.assertContains(response, "Capsula a fost ștearsă.")
+                self.assertFalse(Capsule.objects.filter(pk=target.pk).exists())
+                self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+                self.assertTrue(Capsule.objects.filter(pk=other_capsule.pk).exists())
+                self.assertEqual(self.client.post(url).status_code, 404)
+
+    def test_missing_capsule_returns_404(self):
+        self.client.force_login(self.owner)
+        url = reverse("capsules:delete", args=[uuid4()])
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.post(url).status_code, 404)
+
+    def test_unsupported_methods_do_not_delete(self):
+        self.client.force_login(self.owner)
+        for method in ("put", "patch", "delete"):
+            with self.subTest(method=method):
+                self.assertEqual(getattr(self.client, method)(self.url).status_code, 405)
+        self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+
+    def test_csrf_token_is_required_and_valid_token_allows_deletion(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.owner)
+        self.assertEqual(client.post(self.url).status_code, 403)
+        self.assertTrue(Capsule.objects.filter(pk=self.capsule.pk).exists())
+        client.get(self.url)
+        response = client.post(self.url, {"csrfmiddlewaretoken": client.cookies["csrftoken"].value})
+        self.assertRedirects(response, reverse("capsules:list"))
+        self.assertFalse(Capsule.objects.filter(pk=self.capsule.pk).exists())
 
 class HomePageTests(TestCase):
     def test_home_page_is_public(self):
@@ -277,5 +372,3 @@ class CapsuleEditTests(TestCase):
         self.assertRedirects(response, reverse("capsules:list"))
         self.capsule.refresh_from_db()
         self.assertEqual(self.capsule.owner, self.owner)
-
-    

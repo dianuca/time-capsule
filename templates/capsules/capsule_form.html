@@ -6,10 +6,10 @@
 {% endblock %}
 
 {% block content %}
-    <section class="auth-section">
-        <div class="auth-card capsule-form-card">
+    <section class="capsule-workspace">
+        <div class="capsule-surface capsule-editor">
             <span class="eyebrow">PĂSTREAZĂ PREZENTUL</span>
-            <h1>
+            <h1 id="capsule-heading">
                 {% if is_edit %}
                     Editează capsula
                 {% else %}
@@ -21,13 +21,13 @@
                 cât timp capsula este o ciornă.
             </p>
 
-            <form method="post">
+            <form method="post" action="{{ request.path }}" class="capsule-editor-form">
                 {% csrf_token %}
 
                 {{ form.non_field_errors }}
 
                 {% for field in form %}
-                    <div class="form-field">
+                    <div class="form-field field-{{ field.name }}">
                         {{ field.label_tag }}
                         {{ field }}
                         {{ field.errors }}
@@ -40,6 +40,8 @@
                     Descrierea rămâne vizibilă după sigilare.
                 </p>
 
+            <div class="editor-actions">
+            <a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Anulează</a>
             <button class="button button-primary" type="submit">
                 {% if is_edit %}
                     Salvează modificările
@@ -47,13 +49,8 @@
                     Salvează ciorna
                 {% endif %}
             </button>
+            </div>
             </form>
-
-            <p class="auth-switch">
-                <a href="{% url 'capsules:list' %}">
-                    Înapoi la capsulele mele
-                </a>
-            </p>
         </div>
     </section>
 {% endblock %}

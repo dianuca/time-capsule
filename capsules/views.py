@@ -7,6 +7,19 @@ from django.utils import timezone
 from .forms import CapsuleForm
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def capsule_delete(request, pk):
+    capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
+    if request.method == "POST":
+        capsule.delete()
+        messages.success(request, "Capsula a fost ștearsă.")
+        return redirect("capsules:list")
+    return render(request, "capsules/capsule_confirm_delete.html", {"capsule": capsule})
 
 def home(request):
     return render(request, "capsules/home.html")
