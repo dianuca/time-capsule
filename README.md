@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 95 de teste trec, inclusiv 19 teste pentru fotografii și 10 teste pentru integrarea lor în formular. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 107 teste Django trec, inclusiv 12 teste noi pentru reflecții; cele 8 teste JavaScript ale galeriei trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea, deschiderea și fotografiile private sunt implementate. Reflecțiile și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea, deschiderea, fotografiile private și reflecțiile sunt implementate. Paginarea și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -186,15 +186,21 @@ La ștergerea unei imagini, capsule sau a unui cont, se creează în aceeași tr
 
 Validare locală pe SQLite: 95 de teste trec, inclusiv 10 teste noi pentru creare cu fotografii, înlocuire la limită, eliminări străine refuzate, validare, conflicte cu sigilarea și rollback comun pentru mesaj/fișiere. PostgreSQL și verificarea vizuală în browser nu au fost disponibile. Manual pe desktop/mobil: creează o capsulă cu JPEG/PNG/WebP, verifică miniaturile, apoi editează mesajul și înlocuiește o imagine la aceeași salvare. Verifică renunțarea la o imagine nouă, anularea eliminării uneia existente, anularea formularului, limita de 10, un fișier invalid și păstrarea selecției după o eroare de validare. Sigilează și verifică blocarea imaginilor; la termen deschide capsula și verifică galeria.
 
-### 5. Reflecția după deschidere - următoarea prioritate
+### 5. Reflecția după deschidere - implementată
 
-- [ ] Model Reflection: o reflecție personală per capsulă în V1.
-- [ ] Creare/editare numai după prima deschidere, de către proprietar.
-- [ ] Întrebări orientative: ce s-a schimbat, ce s-a împlinit, ce te-a surprins?
-- [ ] Acțiune explicită pentru o nouă ciornă pornind din reflecție; fără copiere automată a datelor la GET.
-- [ ] Teste pentru permisiuni și blocarea înainte de deschidere.
+- [x] Model Reflection: o reflecție personală per capsulă în V1, unicitate impusă de OneToOneField.
+- [x] Creare/editare numai după prima deschidere, de către proprietar; ciornele și capsulele doar disponibile sunt refuzate.
+- [x] Întrebări orientative: ce s-a schimbat, ce s-a împlinit, ce te-a surprins? Este suficient un răspuns; maximum 5000 de caractere per răspuns.
+- [x] Acțiune explicită pentru o nouă ciornă pornind din reflecție; fără copiere automată a datelor la GET.
+- [x] Teste pentru permisiuni și blocarea înainte de deschidere, repetarea salvării, CSRF, conținut escap-at, unicitate și ștergere în cascadă.
 
-### 6. Colecție și teme
+După citirea capsulei, secțiunea „Un gând din prezent” oferă „Scrie o reflecție” sau „Editează reflecția”, în același modal. Reflecția rămâne separată de scrisoarea sigilată și nu modifică mesajul, data sau prima deschidere. Salvarea revalidează accesul printr-o scriere condiționată a rândului capsulei în tranzacție, fără modificarea timestamp-ului capsulei.
+
+„O scrisoare pentru următorul capitol” face POST și pregătește un formular nesalvat: titlul, tema și răspunsurile din reflecție sunt precompletate, cu o dată propusă peste un an. Utilizatorul poate modifica toate câmpurile; o capsulă nouă este creată numai la „Salvează ciorna”. Mesajul original și fotografiile nu sunt copiate. GET pe acțiunea de pregătire este refuzat; deschiderea paginii de reflecție nu creează înregistrări.
+
+Migrare: `python manage.py migrate` aplică `0004_reflection`, fără schimbarea datelor existente. Validare: 12 teste noi, 107 teste Django în total, 8 teste JavaScript pentru galerie, `make check` și verificarea migrărilor. Verificarea vizuală rămâne manuală: deschide o capsulă demo deja deschisă, salvează și editează reflecția, pregătește următoarea scrisoare, anulează și verifică faptul că nu s-a creat nimic; apoi repetă și salvează noua ciornă.
+
+### 6. Colecție și teme - paginarea este următoarea prioritate
 
 - [x] Filtre: toate, ciorne, sigilate, disponibile, deschise; stări mutual exclusive și numărători private.
 - [ ] Paginare și ordonare coerentă; păstrează filtrele în navigare.
@@ -301,7 +307,7 @@ Migrarea `0002_capsule_theme` adaugă tema cu valoarea implicită lila fără pi
 
 Rulează `python manage.py seed_demo` pentru utilizatorul existent `dianaciodolan`, sau `python manage.py seed_demo --username NUME` pentru alt cont existent. Comanda nu creează conturi și nu schimbă parolele. Adaugă 24 de capsule (6 în fiecare stare), cu identificatori stabili; rerularea nu dublează capsulele și nu suprascrie datele existente sau editările manuale. O capsulă demo ștearsă va fi recreată la rerulare. Datele sunt relative la prima generare; rerularea nu reprogramează capsulele existente.
 
-Scenarii: titlu lung, descriere lungă sau absentă, mesaj gol în ciornă, scrisoare lungă, mesaj scurt, diacritice/emoji, text HTML literal, ciornă expirată, termen peste 15 minute, mâine, peste o săptămână, un an și zece ani, capsule disponibile și deschise de mult timp. Datele de creare sunt variate pentru verificarea ordonării. Seed-ul nu generează fotografii sau reflecții. Sigilarea, lectura și fotografiile au acum fluxuri dedicate; reflecțiile rămân neimplementate.
+Scenarii: titlu lung, descriere lungă sau absentă, mesaj gol în ciornă, scrisoare lungă, mesaj scurt, diacritice/emoji, text HTML literal, ciornă expirată, termen peste 15 minute, mâine, peste o săptămână, un an și zece ani, capsule disponibile și deschise de mult timp. Datele de creare sunt variate pentru verificarea ordonării. Seed-ul nu generează fotografii sau reflecții; acestea pot fi adăugate prin fluxurile dedicate existente.
 
 Colecția a fost rafinată pe `feature/collection-ui`: carduri cu înălțimi uniforme pe rând și culori după stare, ștergere în meniul „⋯”, filtre cu numărători, dată relativă plus data exactă în fusul utilizatorului și un mesaj introductiv personal în formular. Notificările se închid după 8 secunde sau manual; temporizatorul se oprește la hover/focus. Validare: 43 de teste Django, verificarea Django și sintaxa JavaScript. Verificarea vizuală/interactivă în browser rămâne manuală.
 

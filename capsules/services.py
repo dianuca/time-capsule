@@ -1,10 +1,34 @@
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Capsule
+from .models import Capsule, Reflection
+from django.db import transaction
+from django.db.models import F
 
 
 DRAFT_FIELDS = ("title", "description", "message", "opens_at", "theme")
+REFLECTION_FIELDS = ("changed", "fulfilled", "surprised")
+
+
+def can_reflect(capsule):
+    return not capsule.is_draft and capsule.first_opened_at is not None and capsule.opens_at <= timezone.now()
+
+
+def save_reflection(capsule, values):
+    with transaction.atomic():
+        # Lock the parent without changing its content or edit timestamp.
+        allowed = Capsule.objects.filter(
+            pk=capsule.pk, owner_id=capsule.owner_id, sealed_at__isnull=False,
+            first_opened_at__isnull=False, opens_at__lte=timezone.now(),
+        ).update(updated_at=F("updated_at"))
+        if not allowed:
+            raise ValidationError("Reflecția este disponibilă doar după deschiderea capsulei.")
+        if not any(values.get(name, "").strip() for name in REFLECTION_FIELDS):
+            raise ValidationError("Scrie măcar un gând pentru această reflecție.")
+        reflection, _ = Reflection.objects.update_or_create(
+            capsule_id=capsule.pk, defaults={name: values[name] for name in REFLECTION_FIELDS},
+        )
+        return reflection
 
 
 def update_draft(capsule, values):

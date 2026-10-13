@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Reflecția ta | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface reflection-editor theme-{{ capsule.theme }}">
+        <span class="eyebrow">O ÎNTÂLNIRE CU TINE</span>
+        <h1 id="capsule-heading">Ce vezi diferit astăzi?</h1>
+        <p>După „{{ capsule.title }}”, păstrează câteva gânduri despre drumul parcurs. Poți răspunde doar la întrebările care îți vorbesc.</p>
+        <form method="post" action="{% url 'capsules:reflection' capsule.pk %}">
+            {% csrf_token %}{{ form.non_field_errors }}
+            <div class="reflection-fields">
+                {% for field in form %}<div class="form-field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+            </div>
+            <div class="editor-actions">
+                <a class="button button-quiet" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Înapoi la scrisoare</a>
+                <button class="button button-primary" type="submit">Păstrează reflecția</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

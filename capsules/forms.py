@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Attachment, Capsule
+from .models import Attachment, Capsule, Reflection
 from .photo_services import MAX_PHOTOS, validate_photo
 
 
@@ -25,6 +25,24 @@ class PhotoUploadForm(forms.Form):
         label="Adaugă fotografii",
         widget=MultiplePhotoInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
     )
+
+
+class ReflectionForm(forms.ModelForm):
+    class Meta:
+        model = Reflection
+        fields = ("changed", "fulfilled", "surprised")
+        labels = {
+            "changed": "Ce s-a schimbat de atunci?",
+            "fulfilled": "Ce s-a împlinit?",
+            "surprised": "Ce te-a surprins?",
+        }
+        widgets = {name: forms.Textarea(attrs={"rows": 4}) for name in fields}
+
+    def clean(self):
+        data = super().clean()
+        if not any(data.get(name, "").strip() for name in self.Meta.fields):
+            raise forms.ValidationError("Scrie măcar un gând pentru această reflecție.")
+        return data
 
 class CapsuleForm(forms.ModelForm):
     photos = PhotoFilesField(

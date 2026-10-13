@@ -17,11 +17,10 @@
                 {% endif %}
             </h1>
             <p>
-                Începe cu un gând. Poți reveni asupra lui
-                cât timp capsula este o ciornă.
+                {% if from_reflection %}Un nou capitol pornit din reflecția ta. Alege data și salvează când ești gata.{% else %}Începe cu un gând. Poți reveni asupra lui cât timp capsula este o ciornă.{% endif %}
             </p>
 
-            <form method="post" enctype="multipart/form-data" action="{{ request.path }}" class="capsule-editor-form">
+            <form method="post" enctype="multipart/form-data" action="{{ form_action|default:request.path }}" class="capsule-editor-form">
                 {% csrf_token %}
 
                 {{ form.non_field_errors }}

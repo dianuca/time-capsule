@@ -73,3 +73,12 @@ class PendingFileDeletion(models.Model):
     attempts = models.PositiveIntegerField(default=0)
     last_error = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Reflection(models.Model):
+    capsule = models.OneToOneField(Capsule, on_delete=models.CASCADE, related_name="reflection")
+    changed = models.TextField(blank=True, max_length=5000)
+    fulfilled = models.TextField(blank=True, max_length=5000)
+    surprised = models.TextField(blank=True, max_length=5000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

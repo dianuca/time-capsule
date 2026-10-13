@@ -4,7 +4,7 @@ from .models import Capsule
 from zoneinfo import ZoneInfo
 from django.shortcuts import redirect
 from django.utils import timezone
-from .forms import CapsuleForm, PhotoUploadForm
+from .forms import CapsuleForm, PhotoUploadForm, ReflectionForm
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -15,12 +15,55 @@ from math import ceil
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ValidationError
-from .services import DRAFT_FIELDS, seal_capsule
-from .models import Attachment
+from .services import DRAFT_FIELDS, REFLECTION_FIELDS, can_reflect, seal_capsule, save_reflection
+from .models import Attachment, Reflection
 from .photo_services import add_photos, remove_photo, save_capsule_with_photos
 from django.http import FileResponse, Http404
 from django.views.decorators.http import require_POST, require_safe
 import logging
+from datetime import timedelta
+
+
+@login_required
+@never_cache
+@require_http_methods(["GET", "POST"])
+def capsule_reflection(request, pk):
+    capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
+    if not can_reflect(capsule):
+        return HttpResponseForbidden("Reflecția este disponibilă doar după deschiderea capsulei.")
+    reflection = Reflection.objects.filter(capsule=capsule).first()
+    form = ReflectionForm(request.POST if request.method == "POST" else None, instance=reflection)
+    if request.method == "POST" and form.is_valid():
+        try:
+            save_reflection(capsule, {name: form.cleaned_data[name] for name in REFLECTION_FIELDS})
+        except ValidationError as exc:
+            return HttpResponseForbidden(" ".join(exc.messages))
+        return redirect("capsules:detail", pk=pk)
+    return render(request, "capsules/capsule_reflection.html", {
+        "capsule": capsule, "form": form,
+    })
+
+
+@login_required
+@never_cache
+@require_POST
+def capsule_from_reflection(request, pk):
+    capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
+    if not can_reflect(capsule):
+        return HttpResponseForbidden("Deschide capsula înainte de a porni o scrisoare nouă.")
+    reflection = get_object_or_404(Reflection, capsule=capsule)
+    headings = {"changed": "Ce s-a schimbat", "fulfilled": "Ce s-a împlinit", "surprised": "Ce m-a surprins"}
+    message = "\n\n".join(f"{headings[name]}:\n{getattr(reflection, name)}" for name in REFLECTION_FIELDS if getattr(reflection, name).strip())
+    # Only prepare an unsaved form after explicit POST; the user chooses Save.
+    with timezone.override(ZoneInfo(request.user.timezone)):
+        form = CapsuleForm(initial={
+            "title": f"Un nou capitol — {capsule.title}"[:150],
+            "description": "Pornită dintr-o reflecție personală.", "message": message,
+            "opens_at": timezone.now() + timedelta(days=365), "theme": capsule.theme,
+        })
+        return render(request, "capsules/capsule_form.html", {
+            "form": form, "form_action": reverse("capsules:create"), "from_reflection": True,
+        })
 
 
 @login_required
@@ -122,6 +165,8 @@ def capsule_detail(request, pk):
             "animate_open": can_read and not capsule.is_draft and request.GET.get("opened") == "1",
             "animate_seal": not capsule.is_draft and request.GET.get("sealed") == "1",
             "attachments": capsule.attachments.all() if can_read else [],
+            "can_reflect": can_read and not capsule.is_draft,
+            "reflection": Reflection.objects.filter(capsule=capsule).first() if can_read and not capsule.is_draft else None,
         })
 
 

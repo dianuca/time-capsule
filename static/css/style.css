@@ -1229,6 +1229,15 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .reader-date, .letter-written { color: var(--muted); font-size: 12px; }
 .letter-paper { position: relative; margin-top: 22px; padding: 28px 36px; border-radius: 3px 3px 14px 14px; background: linear-gradient(var(--card-tint, #faf3e7), #fffdf6 120px); box-shadow: 0 8px 24px #7455a50a; border: 1px solid #eee7d9; border-top: 3px solid var(--envelope-edge, #c9b5df); }
 .letter-written { margin: 0 0 20px; }
+.reflection-summary { margin-top: 24px; padding: 20px; border: 1px solid var(--envelope-edge, #c9b5df); border-radius: 16px; background: linear-gradient(135deg, var(--card-tint, #f2ecfa), #fffdf980); }
+.reflection-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 8px 0 14px; }
+.reflection-heading h2 { margin: 0; font-size: 19px; font-weight: 500; }
+.reflection-summary h3 { margin: 16px 0 6px; color: var(--accent-dark); font-size: 13px; font-weight: 500; }
+.reflection-summary p { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.reflection-summary button, .reflection-editor button { font: inherit; font-size: 13px; cursor: pointer; }
+.reflection-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.reflection-fields textarea { min-height: 180px; font-size: 14px; }
+@media (max-width: 760px) { .reflection-fields { grid-template-columns: 1fr; gap: 0; } .reflection-fields textarea { min-height: 110px; } }
 .letter-message { font-family: Georgia, serif; font-size: 18px; line-height: 1.9; overflow-wrap: anywhere; }
 .opening-envelope { text-align: center; font-size: 80px; color: var(--accent); padding: 12px; }
 .letter-reveal .letter-paper { animation: letter-unfold 700ms ease-out both; transform-origin: top center; }

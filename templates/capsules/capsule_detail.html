@@ -45,6 +45,18 @@
             <p>Capsula este sigilată. Mesajul va putea fi deschis la data afișată mai sus.</p>
             <p class="capsule-countdown" data-opens-at="{{ capsule.opens_at|date:'c' }}" data-detail-url="{% url 'capsules:detail' capsule.pk %}" aria-live="off"></p>
         {% endif %}
+        {% if can_reflect %}
+        <section class="reflection-summary">
+            <span class="eyebrow">DUPĂ DESCHIDERE</span>
+            <div class="reflection-heading"><h2>Un gând din prezent</h2><a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:reflection' capsule.pk %}">{% if reflection %}Editează reflecția{% else %}Scrie o reflecție{% endif %} ↗</a></div>
+            {% if reflection %}
+                {% if reflection.changed %}<h3>Ce s-a schimbat</h3><p>{{ reflection.changed|linebreaksbr }}</p>{% endif %}
+                {% if reflection.fulfilled %}<h3>Ce s-a împlinit</h3><p>{{ reflection.fulfilled|linebreaksbr }}</p>{% endif %}
+                {% if reflection.surprised %}<h3>Ce te-a surprins</h3><p>{{ reflection.surprised|linebreaksbr }}</p>{% endif %}
+                <form method="post" action="{% url 'capsules:from-reflection' capsule.pk %}">{% csrf_token %}<button class="button button-quiet" type="submit">O scrisoare pentru următorul capitol ↗</button></form>
+            {% else %}<p>Ce s-a schimbat, ce s-a împlinit, ce te-a surprins? Lasă un gând pentru tine de astăzi.</p>{% endif %}
+        </section>
+        {% endif %}
         <div class="editor-actions"><a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Înapoi la colecție</a></div>
     </div>
 </section>
