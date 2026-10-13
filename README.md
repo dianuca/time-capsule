@@ -156,7 +156,7 @@ Validare: 8 teste noi pentru deschidere; suita totală are 55 de teste. Răspuns
 
 ### 4. Fotografii private - implementate
 
-Fotografiile galeriei umplu cadrul până la margini (`object-fit: cover`), cu o înălțime mai mare și stabilă; săgețile sunt suprapuse peste imagine. Numele fișierului apare peste un gradient discret la baza fotografiei, iar contorul rămâne sub cadru.
+Fotografiile galeriei sunt afișate integral, centrat, cu proporțiile păstrate (`object-fit: scale-down`): imaginile mari se încadrează în spațiul disponibil, iar cele mici nu sunt mărite artificial. Cadrul are înălțime stabilă, săgețile sunt suprapuse, iar contorul rămâne dedesubt. Evită `object-fit: cover` în galeria de lectură: decuparea și efectul de zoom nu sunt dorite.
 
 Stabilizarea galeriei: fotografia curentă rămâne vizibilă până când următoarea este încărcată și decodată; imaginile vecine sunt preîncărcate. Navigarea rapidă ignoră încărcările întârziate. Înălțimea cadrului și spațiul pentru numele fișierului sunt fixe, iar modalul rezervă spațiul scrollbar-ului pentru a evita salturile laterale. Cele 8 teste JavaScript includ încărcarea lentă, navigarea rapidă și erorile de decodare; cele 95 de teste Django trec. Verificarea vizuală în browser rămâne manuală.
 
