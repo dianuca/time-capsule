@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Time Capsule{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261013-2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261013-3">
 </head>
 <body>
     <header class="site-header">
@@ -38,7 +38,7 @@
         {% if messages %}
             <div class="toast-stack" role="status" aria-live="polite">
                 {% for message in messages %}
-                    <p class="toast"><span aria-hidden="true">✓</span> {{ message }}</p>
+                    <div class="toast"><span aria-hidden="true">✓</span> {{ message }}<button type="button" class="toast-close" aria-label="Închide notificarea">×</button></div>
                 {% endfor %}
             </div>
         {% endif %}

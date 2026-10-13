@@ -174,11 +174,11 @@ Branch sugerat: `feature/capsule-photos`.
 
 ### 6. Colecție și teme
 
-- [ ] Filtre: toate, ciorne, sigilate, disponibile, deschise; stări mutual exclusive.
+- [x] Filtre: toate, ciorne, sigilate, disponibile, deschise; stări mutual exclusive și numărători private.
 - [ ] Paginare și ordonare coerentă; păstrează filtrele în navigare.
 - [ ] Alegerea unei teme dintr-o listă fixă: lila, crem, roz, verde.
 - [ ] Tema poate fi modificată doar în ciornă; clase CSS din alegeri validate.
-- [ ] Afișează datele din listă în fusul utilizatorului, nu doar în fusul global Django.
+- [x] Afișează datele din listă în fusul utilizatorului, nu doar în fusul global Django.
 - [ ] Teste pentru filtre, paginare și fusul orar.
 
 ### 7. Cont, parole și notificări
@@ -251,6 +251,8 @@ Branch sugerat: `feature/capsule-photos`.
 În afara acestui MVP: destinatari multipli, conturi pentru minori și deblocare pe baza unor evenimente externe.
 
 ## Preferințe UI de păstrat
+
+Colecția a fost rafinată pe `feature/collection-ui`: carduri cu înălțimi uniforme pe rând și culori după stare, ștergere în meniul „⋯”, filtre cu numărători, dată relativă plus data exactă în fusul utilizatorului și un mesaj introductiv personal în formular. Notificările se închid după 8 secunde sau manual; temporizatorul se oprește la hover/focus. Validare: 43 de teste Django, verificarea Django și sintaxa JavaScript. Verificarea vizuală/interactivă în browser rămâne manuală.
 
 Modalele folosesc un fundal cu blur de 18px (fallback prin filtrarea paginii), suprafață crem cu accent lila și animație scurtă la apariție (dezactivată pentru `prefers-reduced-motion`). Formularul are un layout orizontal de maximum 1120px, cu mesajul în coloana mai lată și spațiere verticală compactă. Conturul nativ al dialogului și separatorul acțiunilor sunt eliminate; focusul de tastatură rămâne vizibil. Pe ecrane mici se păstrează accesul prin scroll dacă este necesar.
 

@@ -1,4 +1,45 @@
 (() => {
+    function prepareToasts() {
+        document.querySelectorAll('.toast:not([data-ready])').forEach((toast) => {
+            toast.dataset.ready = 'true';
+            let timer;
+            const dismiss = () => {
+                clearTimeout(timer);
+                if (toast.contains(document.activeElement)) {
+                    const heading = document.querySelector('.page-content h1');
+                    heading?.setAttribute('tabindex', '-1');
+                    heading?.focus();
+                }
+                toast.classList.add('is-leaving');
+                setTimeout(() => toast.remove(), 200);
+            };
+            const start = () => {
+                clearTimeout(timer);
+                if (!toast.matches(':hover') && !toast.contains(document.activeElement)) {
+                    timer = setTimeout(dismiss, 8000);
+                }
+            };
+            toast.addEventListener('pointerenter', () => clearTimeout(timer));
+            toast.addEventListener('focusin', () => clearTimeout(timer));
+            toast.addEventListener('pointerleave', start);
+            toast.addEventListener('focusout', () => setTimeout(start, 0));
+            toast.querySelector('.toast-close')?.addEventListener('click', dismiss);
+            start();
+        });
+    }
+    prepareToasts();
+    document.addEventListener('click', (event) => {
+        document.querySelectorAll('.capsule-menu[open]').forEach((menu) => {
+            if (!menu.contains(event.target) || event.target.closest('a')) menu.open = false;
+        });
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('.capsule-menu[open]').forEach((menu) => {
+            menu.open = false;
+            menu.querySelector('summary').focus();
+        });
+    });
     const dialog = document.querySelector('#capsule-dialog');
     if (!dialog || typeof dialog.showModal !== 'function') return;
     const content = dialog.querySelector('.dialog-content');
@@ -67,6 +108,7 @@
                 if (!main) throw new Error('Missing page');
                 dialog.close();
                 document.querySelector('.page-content').replaceWith(main);
+                prepareToasts();
                 window.history.replaceState(null, '', response.url);
                 main.querySelector('h1')?.setAttribute('tabindex', '-1');
                 main.querySelector('h1')?.focus();

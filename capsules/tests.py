@@ -6,6 +6,53 @@ from django.utils import timezone
 from .models import Capsule
 from zoneinfo import ZoneInfo
 from uuid import uuid4
+from unittest.mock import patch
+
+
+class CapsuleCollectionTests(TestCase):
+    def setUp(self):
+        self.owner = get_user_model().objects.create_user(username="collection", timezone="Europe/Bucharest")
+        self.other = get_user_model().objects.create_user(username="outsider")
+        self.client.force_login(self.owner)
+        self.now = timezone.now().replace(hour=23, minute=30, second=0, microsecond=0)
+        self.items = {}
+        for state in ("draft", "sealed", "available", "opened"):
+            self.items[state] = Capsule.objects.create(
+                owner=self.owner, title=state, message="Un mesaj privat",
+                opens_at=self.now + timedelta(days=2) if state in ("draft", "sealed") else self.now,
+                sealed_at=None if state == "draft" else self.now - timedelta(days=3),
+                first_opened_at=self.now if state == "opened" else None,
+            )
+        Capsule.objects.create(owner=self.other, title="Străină", opens_at=self.now)
+
+    def test_filters_are_exclusive_and_counts_are_private(self):
+        with patch("capsules.views.timezone.now", return_value=self.now):
+            for state, capsule in self.items.items():
+                with self.subTest(state=state):
+                    response = self.client.get(reverse("capsules:list"), {"state": state})
+                    self.assertQuerySetEqual(response.context["capsules"], [capsule])
+                    self.assertEqual(response.context["selected_state"], state)
+                    self.assertEqual([item["count"] for item in response.context["filters"]], [4, 1, 1, 1, 1])
+                    self.assertNotContains(response, "Străină")
+                    self.assertNotContains(response, capsule.message)
+
+    def test_unknown_filter_defaults_to_all(self):
+        response = self.client.get(reverse("capsules:list"), {"state": "unknown"})
+        self.assertEqual(response.context["selected_state"], "all")
+        self.assertEqual(len(response.context["capsules"]), 4)
+
+    def test_friendly_date_and_exact_date_use_owner_timezone(self):
+        with patch("capsules.views.timezone.now", return_value=self.now):
+            response = self.client.get(reverse("capsules:list"), {"state": "sealed"})
+        self.assertContains(response, "Se deschide peste 2 zile")
+        expected = self.items["sealed"].opens_at.astimezone(ZoneInfo(self.owner.timezone))
+        self.assertContains(response, expected.strftime("%d.%m.%Y, %H:%M"))
+
+    def test_empty_filter_offers_return_to_collection(self):
+        self.items["draft"].delete()
+        response = self.client.get(reverse("capsules:list"), {"state": "draft"})
+        self.assertContains(response, "Nicio capsulă în această categorie.")
+        self.assertContains(response, "Vezi toate capsulele")
 
 
 class CapsuleDeleteTests(TestCase):

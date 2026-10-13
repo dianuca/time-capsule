@@ -9,7 +9,7 @@ class CapsuleForm(forms.ModelForm):
         labels = {
             "title": "Titlu",
             "description": "Descriere scurtă",
-            "message": "Mesaj pentru viitor",
+            "message": "Ce vrei să-i spui versiunii tale din viitor?",
             "opens_at": "Data și ora deschiderii",
         }
         widgets = {
@@ -19,7 +19,7 @@ class CapsuleForm(forms.ModelForm):
             "description": forms.TextInput(
                 attrs={"placeholder": "Despre ce este această capsulă?"}
             ),
-            "message": forms.Textarea(attrs={"rows": 7}),
+            "message": forms.Textarea(attrs={"rows": 7, "placeholder": "Dragă eu din viitor, astăzi…"}),
             "opens_at": forms.DateTimeInput(
                 format="%Y-%m-%dT%H:%M",
                 attrs={"type": "datetime-local"},

@@ -16,9 +16,17 @@
             </a>
         </div>
 
+        <nav class="collection-filters" aria-label="Filtrează capsulele">
+            {% for filter in filters %}
+                <a href="?state={{ filter.value }}" class="collection-filter{% if selected_state == filter.value %} is-active{% endif %}" {% if selected_state == filter.value %}aria-current="page"{% endif %}>
+                    {{ filter.label }} <span>{{ filter.count }}</span>
+                </a>
+            {% endfor %}
+        </nav>
         <div class="capsule-grid">
             {% for capsule in capsules %}
-            <article class="capsule-card">
+            <article class="capsule-card state-{{ capsule.ui_state }}">
+                <div class="capsule-card-top">
                 <span class="capsule-status">
                     {% if capsule.is_draft %}
                         Ciornă
@@ -30,6 +38,13 @@
                         Sigilată
                     {% endif %}
                 </span>
+                <details class="capsule-menu">
+                    <summary aria-label="Acțiuni pentru {{ capsule.title }}">⋯</summary>
+                    <div class="capsule-menu-panel">
+                        <a class="capsule-delete-link" data-capsule-popup href="{% url 'capsules:delete' capsule.pk %}">Șterge capsula</a>
+                    </div>
+                </details>
+                </div>
 
                 <h2>{{ capsule.title }}</h2>
 
@@ -38,7 +53,7 @@
                 {% endif %}
 
                 <div class="capsule-date">
-                    Deschidere:
+                    <span class="opening-label">{{ capsule.opening_label }}</span>
                     <time datetime="{{ capsule.opens_at|date:'c' }}">
                         {{ capsule.opens_at|date:"d.m.Y, H:i" }}
                     </time>
@@ -54,17 +69,21 @@
                             Editează ciorna ↗
                         </a>
                         {% endif %}
-                        <a class="capsule-delete-link" data-capsule-popup href="{% url 'capsules:delete' capsule.pk %}">Șterge</a>
                     </div>
             </article>
             {% empty %}
                 <div class="collection-empty">
                     <span class="empty-icon" aria-hidden="true">✉</span>
+                    {% if selected_state != 'all' %}
+                    <h2>Nicio capsulă în această categorie.</h2>
+                    <p><a href="{% url 'capsules:list' %}">Vezi toate capsulele</a></p>
+                    {% else %}
                     <h2>Prima ta amintire începe aici.</h2>
                     <p>
                         Nu ai încă nicio capsulă.
                         Scrie primul tău mesaj către viitor.
                     </p>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
