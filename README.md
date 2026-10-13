@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 107 teste Django trec, inclusiv 12 teste noi pentru reflecții; cele 8 teste JavaScript ale galeriei trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 113 teste Django trec, inclusiv 6 teste noi pentru paginare; cele 14 teste JavaScript pentru galerie și căutare/paginare trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea, deschiderea, fotografiile private și reflecțiile sunt implementate. Paginarea și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private și reflecțiile sunt implementate. Setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -200,16 +200,20 @@ După citirea capsulei, secțiunea „Un gând din prezent” oferă „Scrie o 
 
 Migrare: `python manage.py migrate` aplică `0004_reflection`, fără schimbarea datelor existente. Validare: 12 teste noi, 107 teste Django în total, 8 teste JavaScript pentru galerie, `make check` și verificarea migrărilor. Verificarea vizuală rămâne manuală: deschide o capsulă demo deja deschisă, salvează și editează reflecția, pregătește următoarea scrisoare, anulează și verifică faptul că nu s-a creat nimic; apoi repetă și salvează noua ciornă.
 
-### 6. Colecție și teme - paginarea este următoarea prioritate
+### 6. Colecție și teme - implementate
 
 - [x] Filtre: toate, ciorne, sigilate, disponibile, deschise; stări mutual exclusive și numărători private.
-- [ ] Paginare și ordonare coerentă; păstrează filtrele în navigare.
+- [x] Paginare și ordonare coerentă; păstrează filtrele și căutarea în navigare.
 - [x] Alegerea unei teme dintr-o listă fixă: lila, crem, roz, verde.
 - [x] Tema poate fi modificată doar în ciornă; clase CSS din alegeri validate.
 - [x] Afișează datele din listă în fusul utilizatorului, nu doar în fusul global Django.
-- [ ] Teste pentru filtre, paginare și fusul orar.
+- [x] Teste pentru filtre, paginare și fusul orar.
 
-### 7. Cont, parole și notificări
+Colecția afișează 12 capsule pe pagină, ordonate descrescător după `created_at`, apoi UUID pentru egalități. Numărătorile filtrelor și totalul căutării acoperă toate paginile. Navigarea afișează intervalul curent, pagina activă, anterior/următor și numere prescurtate cu „…” pentru colecții mari. Linkurile păstrează `state` și `q`. Numerele de pagină invalide textual duc la pagina 1; paginile în afara intervalului duc la ultima pagină (inclusiv după ștergerea ultimului element).
+
+Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea, fără reload; căutarea și schimbarea filtrului pornesc de la pagina 1. Câmpul de căutare își păstrează focusul la tastare; navigarea între pagini mută focusul la rezultate. Fără JavaScript funcționează linkurile GET. Testele JavaScript: `node --test static/js/tests/*.test.cjs` (14 scenarii, DOM simulat). Verificare manuală pe desktop/mobil: paginile 1/2 pentru datele demo, căutare din pagina 2, filtrare, resetare, navigare cu tastatura și ștergerea ultimei capsule de pe o pagină. Browserul nu a fost verificat vizual în această etapă.
+
+### 7. Cont, parole și notificări - setările profilului sunt următoarea prioritate
 
 - [ ] Setări profil: nume, fus orar validat și preferință email.
 - [ ] Resetare parolă prin email și template-uri coerente vizual.

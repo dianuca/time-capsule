@@ -22,6 +22,7 @@ from django.http import FileResponse, Http404
 from django.views.decorators.http import require_POST, require_safe
 import logging
 from datetime import timedelta
+from django.core.paginator import Paginator
 
 
 @login_required
@@ -206,7 +207,10 @@ def capsule_list(request):
     selected = request.GET.get("state", "all")
     if selected not in dict(labels):
         selected = "all"
-    capsules = owned if selected == "all" else owned.filter(ui_state=selected)
+    filtered = owned if selected == "all" else owned.filter(ui_state=selected)
+    paginator = Paginator(filtered.order_by("-created_at", "-pk"), 12)
+    page = paginator.get_page(request.GET.get("page"))
+    capsules = page.object_list
     for capsule in capsules:
         seconds = (capsule.opens_at - now).total_seconds()
         if capsule.ui_state == "opened":
@@ -227,6 +231,8 @@ def capsule_list(request):
     with timezone.override(ZoneInfo(request.user.timezone)):
         return render(request, "capsules/capsule_list.html", {
             "capsules": capsules, "filters": filters, "selected_state": selected, "query": query,
+            "page_obj": page,
+            "page_range": paginator.get_elided_page_range(page.number, on_each_side=1, on_ends=1),
         })
 
 @login_required

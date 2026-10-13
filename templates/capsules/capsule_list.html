@@ -37,7 +37,7 @@
         </form>
         </div>
         <p class="search-status visually-hidden" role="status" aria-live="polite"></p>
-        <div class="capsule-grid" data-result-count="{{ capsules|length }}">
+        <div class="capsule-grid" tabindex="-1" role="region" aria-label="Rezultatele colecției" data-result-count="{{ page_obj.paginator.count }}" data-page-number="{{ page_obj.number }}" data-page-count="{{ page_obj.paginator.num_pages }}">
             {% for capsule in capsules %}
             <article class="capsule-card state-{{ capsule.ui_state }} theme-{{ capsule.theme }}">
                 <div class="capsule-card-top">
@@ -112,6 +112,20 @@
                     {% endif %}
                 </div>
             {% endfor %}
+        </div>
+        <div class="collection-pagination">
+            {% if page_obj.paginator.count %}<p>{{ page_obj.start_index }}–{{ page_obj.end_index }} din {{ page_obj.paginator.count }} capsule</p>{% endif %}
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Paginile colecției">
+                {% if page_obj.has_previous %}<a class="collection-page-link" href="?page={{ page_obj.previous_page_number }}&amp;state={{ selected_state }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" aria-label="Pagina anterioară">‹</a>{% endif %}
+                {% for number in page_range %}
+                    {% if number == page_obj.paginator.ELLIPSIS %}<span class="page-ellipsis">{{ number }}</span>
+                    {% elif number == page_obj.number %}<span class="current-page" aria-current="page">{{ number }}</span>
+                    {% else %}<a class="collection-page-link" href="?page={{ number }}&amp;state={{ selected_state }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" aria-label="Pagina {{ number }}">{{ number }}</a>{% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}<a class="collection-page-link" href="?page={{ page_obj.next_page_number }}&amp;state={{ selected_state }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" aria-label="Pagina următoare">›</a>{% endif %}
+            </nav>
+            {% endif %}
         </div>
     </section>
 {% endblock %}

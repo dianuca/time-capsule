@@ -62,6 +62,7 @@ class DemoSeedTests(TestCase):
         self.assertFalse(self.owner.capsules.exists())
         self.assertEqual(other.capsules.count(), 24)
         self.client.force_login(other)
-        response = self.client.get(reverse("capsules:list"))
+        response = self.client.get(reverse("capsules:list"), {"q": "Ghilimele"})
+        self.assertEqual(len(response.context["capsules"]), 1)
         self.assertContains(response, "&lt;b&gt;amintire&lt;/b&gt;")
         self.assertNotContains(response, '<script>alert("demo")</script>')
