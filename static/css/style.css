@@ -1207,15 +1207,15 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .photo-gallery figcaption { margin-top: 8px; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
 .photo-gallery button { border: 0; background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
 .capsule-photo-gallery { margin-top: 28px; }
-.capsule-gallery-stage { position: relative; border-radius: 16px; background: var(--card-tint, #f2ecfa); overflow: hidden; }
-.capsule-photo-gallery[data-ready="true"] .capsule-gallery-stage { height: calc(clamp(200px, 38vh, 370px) + 30px); }
+.capsule-gallery-stage { --gallery-height: clamp(240px, 46vh, 460px); position: relative; border-radius: 16px; background: var(--card-tint, #f2ecfa); overflow: hidden; }
+.capsule-photo-gallery[data-ready="true"] .capsule-gallery-stage { height: var(--gallery-height); }
 .capsule-gallery-stage[aria-busy="true"]::after { content: 'Se încarcă…'; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); padding: 4px 10px; border-radius: 999px; background: #fffdf5eb; color: var(--muted); font-size: 11px; pointer-events: none; }
 .capsule-gallery-stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.capsule-gallery-slide { margin: 0; }
+.capsule-gallery-slide { position: relative; margin: 0; }
 .capsule-gallery-slide[hidden] { display: none; }
-.capsule-gallery-slide img { display: block; width: 100%; height: clamp(200px, 38vh, 370px); object-fit: contain; padding: 12px 44px; }
-.capsule-gallery-slide figcaption { height: 30px; padding: 0 18px 12px; color: var(--muted); text-align: center; font-size: 11px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.capsule-gallery-arrows { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px; pointer-events: none; }
+.capsule-gallery-slide img { display: block; width: 100%; height: var(--gallery-height); object-fit: cover; padding: 0; }
+.capsule-gallery-slide figcaption { position: absolute; inset: auto 0 0; padding: 26px 18px 12px; background: linear-gradient(transparent, #241c36a6); color: #fff; text-align: center; font-size: 11px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.capsule-gallery-arrows { position: absolute; z-index: 2; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px; pointer-events: none; }
 .capsule-gallery-arrows[hidden], .capsule-gallery-footer[hidden] { display: none; }
 .capsule-gallery-arrows button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0 0 3px; border: 1px solid #ffffffd9; border-radius: 50%; background: #fffdf5eb; color: var(--accent-dark); font: inherit; font-size: 30px; line-height: 1; box-shadow: 0 3px 12px #302a3b12; cursor: pointer; pointer-events: auto; transition: background 150ms ease, box-shadow 150ms ease; }
 .capsule-gallery-arrows button:hover { background: #fff; box-shadow: 0 4px 18px #7455a526; }
@@ -1223,7 +1223,7 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .capsule-gallery-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
 .capsule-gallery-counter { padding: 4px 12px; border: 1px solid var(--envelope-edge, #c9b5df); border-radius: 999px; color: var(--accent-dark); font-size: 12px; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .capsule-gallery-arrows button { transition: none; } }
-@media (max-width: 600px) { .capsule-photo-gallery[data-ready="true"] .capsule-gallery-stage { height: 260px; } .capsule-gallery-slide img { height: 230px; padding-inline: 34px; } .capsule-gallery-arrows { padding: 5px; } .capsule-gallery-arrows button { width: 32px; height: 32px; font-size: 26px; } }
+@media (max-width: 600px) { .capsule-gallery-stage { --gallery-height: 280px; } .capsule-gallery-arrows { padding: 8px; } .capsule-gallery-arrows button { width: 32px; height: 32px; font-size: 26px; } }
 
 .capsule-dialog:has(.capsule-reader) { width: min(800px, calc(100% - 32px)); }
 .reader-date, .letter-written { color: var(--muted); font-size: 12px; }
