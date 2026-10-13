@@ -11,6 +11,36 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.db.models import Case, When, Value, CharField, Count
 from math import ceil
+from django.urls import reverse
+from django.views.decorators.cache import never_cache
+
+
+@login_required
+@never_cache
+@require_http_methods(["GET", "POST"])
+def capsule_detail(request, pk):
+    capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
+    now = timezone.now()
+    if request.method == "POST":
+        if capsule.is_draft or capsule.opens_at > now:
+            return HttpResponseForbidden("Această capsulă nu poate fi deschisă încă.")
+        # Conditional UPDATE is atomic on SQLite and PostgreSQL; repeated opens
+        # cannot replace the original timestamp.
+        changed = Capsule.objects.filter(
+            pk=pk, owner=request.user, sealed_at__isnull=False,
+            opens_at__lte=now, first_opened_at__isnull=True,
+        ).update(first_opened_at=now)
+        url = reverse("capsules:detail", args=[pk])
+        return redirect(f"{url}?opened=1" if changed else url)
+    can_read = capsule.is_draft or (
+        capsule.opens_at <= now and capsule.first_opened_at is not None
+    )
+    with timezone.override(ZoneInfo(request.user.timezone)):
+        return render(request, "capsules/capsule_detail.html", {
+            "capsule": capsule, "can_read": can_read,
+            "can_open": not capsule.is_draft and capsule.opens_at <= now,
+            "animate_open": can_read and not capsule.is_draft and request.GET.get("opened") == "1",
+        })
 
 
 @login_required

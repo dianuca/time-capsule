@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ capsule.title }} | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface capsule-reader{% if animate_open %} letter-reveal{% endif %}">
+        <span class="eyebrow">{% if can_read %}O SCRISOARE PENTRU TINE{% else %}O AMINTIRE PĂSTRATĂ{% endif %}</span>
+        <h1 id="capsule-heading">{{ capsule.title }}</h1>
+        <span class="capsule-status">{% if capsule.is_draft %}Ciornă{% elif can_read %}Deschisă{% elif can_open %}Disponibilă{% else %}Sigilată{% endif %}</span>
+        {% if capsule.description %}<p>{{ capsule.description }}</p>{% endif %}
+        <p class="reader-date">Deschidere: <time datetime="{{ capsule.opens_at|date:'c' }}">{{ capsule.opens_at|date:"d.m.Y, H:i" }}</time> · {{ user.timezone }}</p>
+        {% if can_read %}
+            <article class="letter-paper">
+                <p class="letter-written">Scrisă pe {{ capsule.created_at|date:"d.m.Y" }}{% if capsule.is_draft %} · Ciornă{% endif %}</p>
+                <div class="letter-message">{{ capsule.message|linebreaksbr }}</div>
+            </article>
+        {% elif can_open %}
+            <div class="opening-envelope" aria-hidden="true">✉</div>
+            <p>Momentul a sosit. Ia-ți o clipă pentru tine și redescoperă ce ai păstrat.</p>
+            <form method="post" action="{% url 'capsules:detail' capsule.pk %}">
+                {% csrf_token %}
+                <button class="button button-primary" type="submit">Deschide scrisoarea</button>
+            </form>
+        {% else %}
+            <div class="opening-envelope" aria-hidden="true">✉</div>
+            <p>Capsula este sigilată. Mesajul va putea fi deschis la data afișată mai sus.</p>
+            <p class="capsule-countdown" data-opens-at="{{ capsule.opens_at|date:'c' }}" data-detail-url="{% url 'capsules:detail' capsule.pk %}" aria-live="off"></p>
+        {% endif %}
+        <div class="editor-actions"><a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Înapoi la colecție</a></div>
+    </div>
+</section>
+{% endblock %}

@@ -8,6 +8,7 @@ urlpatterns = [
     path("capsules/", views.capsule_list, name="list"),
     path("capsules/new/", views.capsule_create, name="create"),
     path("capsules/<uuid:pk>/delete/", views.capsule_delete, name="delete"),
+    path("capsules/<uuid:pk>/", views.capsule_detail, name="detail"),
     path(
     "capsules/<uuid:pk>/edit/",
     views.capsule_edit,

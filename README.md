@@ -91,7 +91,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 
 Audit local pe branch-ul `dev`, la 13 octombrie 2026: cele 32 de teste existente au trecut înainte de modificări; după implementarea ștergerii trec 39 de teste (7 noi). `make check`, testele dedicate ștergerii și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări.
 
-Crearea, listarea privată și editarea ciornelor sunt implementate. Sigilarea și deschiderea nu au încă fluxuri dedicate; atașamentele, reflecțiile, filtrele/temele și setările/notificările V1 rămân neimplementate. Admin permite încă editarea conținutului/datei după sigilare; protecția concurenței rămâne de rezolvat în etapa 2.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare și deschiderea sunt implementate. Sigilarea nu are încă flux dedicat; atașamentele, reflecțiile, temele și setările/notificările V1 rămân neimplementate. Admin permite încă editarea conținutului/datei după sigilare; protecția concurenței editării/sigilării rămâne de rezolvat în etapa 2.
 
 ## Reguli de produs și acces
 
@@ -143,14 +143,16 @@ Branch sugerat: `feature/capsule-seal`.
 
 Branch sugerat: `feature/capsule-open`.
 
-- [ ] Pagină proprie pentru capsulă: titlu, descriere, stare și data locală.
-- [ ] Pentru capsula blocată: numărătoare inversă în JS, cu fallback lizibil fără JS.
-- [ ] Înainte de termen, conținutul nu este inclus în răspuns și accesul direct este refuzat.
-- [ ] La termen apare acțiunea „Deschide capsula”.
-- [ ] POST înregistrează first_opened_at o singură dată; apoi lectura este disponibilă prin GET.
-- [ ] Ciornele se citesc/editează fără a marca prima deschidere.
-- [ ] Animație scurtă, cu respectarea prefers-reduced-motion.
-- [ ] Teste înainte/la/după termen, acces străin, prima deschidere repetată și lipsa conținutului în răspunsurile blocate.
+- [x] Pagină proprie pentru capsulă: titlu, descriere, stare și data locală; afișare în modal din colecție.
+- [x] Pentru capsula blocată: numărătoare inversă în JS, cu fallback lizibil fără JS.
+- [x] Înainte de termen, conținutul nu este inclus în răspuns și accesul direct la deschidere este refuzat (403 la POST; GET afișează doar metadatele).
+- [x] La termen apare acțiunea „Deschide capsula”; modalul revalidează disponibilitatea pe server când numărătoarea ajunge la zero.
+- [x] POST înregistrează first_opened_at o singură dată prin UPDATE condiționat atomic; apoi lectura este disponibilă prin GET.
+- [x] Ciornele se citesc/editează fără a marca prima deschidere.
+- [x] Animație scurtă de desfășurare a scrisorii, cu respectarea prefers-reduced-motion.
+- [x] Teste înainte/la/după termen, acces străin, prima deschidere repetată și lipsa conținutului în răspunsurile blocate.
+
+Validare: 8 teste noi pentru deschidere; suita totală are 55 de teste. Răspunsurile detaliilor folosesc `Cache-Control: no-store`; mesajul este escap-at la afișare. Verificarea animației și a modalului în browser rămâne manuală: deschide o capsulă demo disponibilă, confirmă, închide și recitește; verifică și o capsulă blocată, numărătoarea inversă și preferința de mișcare redusă.
 
 ### 4. Fotografii private
 
@@ -235,6 +237,12 @@ Branch sugerat: `feature/capsule-photos`.
 În afara acestui MVP: chat, contribuții fără cont și roluri avansate.
 
 ## V4 - Capsule pentru un destinatar
+
+Flux dorit (planificat, neimplementat): creatorul introduce emailul destinatarului și trimite o capsulă. Dacă există deja un cont cu acea adresă verificată, capsula apare direct în secțiunea „Primite”. Dacă destinatarul nu are cont, primește invitația prin email; după înregistrare și verificarea aceleiași adrese, capsula este asociată contului și apare în „Primite”. Afișarea cardului nu deblochează mesajul înainte de termen și nu înlocuiește acceptarea explicită pentru lectură.
+
+- [ ] Asociere cu un cont existent sau creat ulterior prin aceeași adresă verificată, fără potrivire doar după un email neverificat.
+- [ ] Card și detalii pentru capsulele primite: expeditor, destinatar, titlu, data trimiterii, data deschiderii și stare; emailul nu include mesajul privat.
+- [ ] Teste pentru ambele fluxuri (cont existent/cont nou), email neverificat, adrese duplicate și izolarea accesului.
 
 - [ ] Mod „pentru cineva”, cu un singur destinatar adult; alternativ la modul comun.
 - [ ] Emailul destinatarului poate fi corectat numai înainte de sigilare.

@@ -68,6 +68,12 @@
                         >
                             Editează ciorna ↗
                         </a>
+                        {% elif capsule.first_opened_at %}
+                        <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Citește scrisoarea ↗</a>
+                        {% elif capsule.is_available %}
+                        <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Deschide capsula ✉</a>
+                        {% else %}
+                        <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Vezi capsula ↗</a>
                         {% endif %}
                     </div>
             </article>

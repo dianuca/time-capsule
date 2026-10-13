@@ -1,4 +1,30 @@
 (() => {
+    function updateCountdowns() {
+        document.querySelectorAll('[data-opens-at]').forEach((element) => {
+            const seconds = Math.max(0, Math.ceil((Date.parse(element.dataset.opensAt) - Date.now()) / 1000));
+            if (!Number.isFinite(seconds)) return;
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor(seconds % 86400 / 3600);
+            const minutes = Math.floor(seconds % 3600 / 60);
+            element.textContent = seconds > 0
+                ? `Mai sunt ${days} zile, ${hours} ore, ${minutes} minute și ${seconds % 60} secunde.`
+                : 'Momentul a sosit. Redeschide capsula din colecție pentru a continua.';
+            if (seconds === 0 && !element.dataset.refreshing) {
+                element.dataset.refreshing = 'true';
+                fetch(element.dataset.detailUrl).then(async (response) => {
+                    if (!response.ok || response.redirected || !element.isConnected) return;
+                    const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+                    const surface = page.querySelector('.capsule-reader');
+                    // The server, rather than the browser clock, authorizes the action.
+                    if (surface && !surface.querySelector('[data-opens-at]')) {
+                        element.closest('.capsule-reader').replaceWith(surface);
+                    }
+                }).catch(() => {});
+            }
+        });
+    }
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
     function prepareToasts() {
         document.querySelectorAll('.toast:not([data-ready])').forEach((toast) => {
             toast.dataset.ready = 'true';
@@ -51,6 +77,7 @@
         const surface = page.querySelector('.capsule-surface');
         if (!surface) throw new Error('Missing form');
         content.replaceChildren(surface);
+        updateCountdowns();
     }
 
     document.addEventListener('click', async (event) => {
@@ -104,6 +131,18 @@
             if (response.redirected) {
                 // Render the redirected page directly so Django's success message is preserved.
                 const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+                if (page.querySelector('.capsule-reader')) {
+                    fill(page.documentElement.outerHTML);
+                    content.querySelector('h1')?.setAttribute('tabindex', '-1');
+                    content.querySelector('h1')?.focus();
+                    const listing = await fetch(window.location.href);
+                    if (listing.ok) {
+                        const updated = new DOMParser().parseFromString(await listing.text(), 'text/html');
+                        const collection = updated.querySelector('.collection-section');
+                        if (collection) document.querySelector('.collection-section')?.replaceWith(collection);
+                    }
+                    return;
+                }
                 const main = page.querySelector('.page-content');
                 if (!main) throw new Error('Missing page');
                 dialog.close();

@@ -1139,6 +1139,17 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .capsule-delete-link { padding: 8px 12px; color: #a34d61; font-size: 12px; border-radius: 11px; }
 .capsule-delete-link:hover { background: #f5e5e9; }
 
+.capsule-dialog:has(.capsule-reader) { width: min(800px, calc(100% - 32px)); }
+.reader-date, .letter-written { color: var(--muted); font-size: 12px; }
+.letter-paper { padding: 24px 30px; border-radius: 14px; background: #fffdf6; box-shadow: 0 5px 20px #7455a50a; border: 1px solid #eee7d9; }
+.letter-written { margin: 0 0 20px; }
+.letter-message { font-family: Georgia, serif; font-size: 18px; line-height: 1.9; overflow-wrap: anywhere; }
+.opening-envelope { text-align: center; font-size: 80px; color: var(--accent); padding: 12px; }
+.letter-reveal .letter-paper { animation: letter-unfold 700ms ease-out both; transform-origin: top center; }
+@keyframes letter-unfold { from { opacity: 0; transform: perspective(900px) rotateX(-15deg) translateY(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .letter-reveal .letter-paper { animation: none; } }
+@media (max-width: 600px) { .letter-paper { padding: 18px; } .letter-message { font-size: 16px; } }
+
 .capsule-edit-link {
     display: inline-block;
     padding: 8px 12px;
