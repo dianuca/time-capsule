@@ -252,6 +252,23 @@ Branch sugerat: `feature/capsule-photos`.
 
 ## Preferințe UI de păstrat
 
+### Idei UI pentru etapa următoare
+
+De implementat după popularea cu date demo:
+
+- [ ] Previzualizare discretă de plic pe card, adaptată stării capsulei.
+- [ ] Teme lila, crem, roz și verde, alese prin buline în formular; tema colorează cardul, starea rămâne în badge.
+- [ ] Formular cu „Despre capsulă” în stânga, „Scrisoarea ta” în dreapta și explicația „Când vrei să o redescoperi?” pentru dată.
+- [ ] Sigilare prin modal cu data aleasă, pictogramă de sigiliu și animație scurtă, respectând regulile V1 de integritate.
+- [ ] Deschidere ca o scrisoare: suprafață caldă, text lizibil, spațiu generos și data scrierii; conținutul rămâne privat înainte de termen.
+- [ ] Căutare în colecție după titlu și descriere, limitată la capsulele proprietarului.
+
+### Date demo locale
+
+Rulează `python manage.py seed_demo` pentru utilizatorul existent `dianaciodolan`, sau `python manage.py seed_demo --username NUME` pentru alt cont existent. Comanda nu creează conturi și nu schimbă parolele. Adaugă 24 de capsule (6 în fiecare stare), cu identificatori stabili; rerularea nu dublează capsulele și nu suprascrie datele existente sau editările manuale. O capsulă demo ștearsă va fi recreată la rerulare. Datele sunt relative la prima generare; rerularea nu reprogramează capsulele existente.
+
+Scenarii: titlu lung, descriere lungă sau absentă, mesaj gol în ciornă, scrisoare lungă, mesaj scurt, diacritice/emoji, text HTML literal, ciornă expirată, termen peste 15 minute, mâine, peste o săptămână, un an și zece ani, capsule disponibile și deschise de mult timp. Datele de creare sunt variate pentru verificarea ordonării. Fotografiile, reflecțiile, sigilarea și lectura prin fluxuri dedicate nu sunt încă implementate; seed-ul pregătește stările modelelor existente, fără să adauge acele funcționalități.
+
 Colecția a fost rafinată pe `feature/collection-ui`: carduri cu înălțimi uniforme pe rând și culori după stare, ștergere în meniul „⋯”, filtre cu numărători, dată relativă plus data exactă în fusul utilizatorului și un mesaj introductiv personal în formular. Notificările se închid după 8 secunde sau manual; temporizatorul se oprește la hover/focus. Validare: 43 de teste Django, verificarea Django și sintaxa JavaScript. Verificarea vizuală/interactivă în browser rămâne manuală.
 
 Modalele folosesc un fundal cu blur de 18px (fallback prin filtrarea paginii), suprafață crem cu accent lila și animație scurtă la apariție (dezactivată pentru `prefers-reduced-motion`). Formularul are un layout orizontal de maximum 1120px, cu mesajul în coloana mai lată și spațiere verticală compactă. Conturul nativ al dialogului și separatorul acțiunilor sunt eliminate; focusul de tastatură rămâne vizibil. Pe ecrane mici se păstrează accesul prin scroll dacă este necesar.
