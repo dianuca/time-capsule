@@ -42,7 +42,7 @@ def profile(request):
     if not next_url or not url_has_allowed_host_and_scheme(
         next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
     ):
-        next_url = reverse("capsules:list")
+        next_url = reverse("accounts:profile")
     form = ProfileForm(request.POST if request.method == "POST" else None, instance=request.user)
     if request.method == "POST" and form.is_valid():
         user = form.save(commit=False)

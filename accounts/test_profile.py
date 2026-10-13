@@ -43,7 +43,7 @@ class ProfileSettingsTests(TestCase):
 
     def test_saves_names_timezone_and_preference_with_success_feedback(self):
         response = self.client.post(self.url, self.data, follow=True)
-        self.assertRedirects(response, reverse("capsules:list"))
+        self.assertRedirects(response, self.url)
         self.assertContains(response, "Preferințele tale au fost salvate.")
         self.user.refresh_from_db()
         self.assertEqual(self.user.first_name, "Dana")
@@ -91,7 +91,7 @@ class ProfileSettingsTests(TestCase):
         for target in ("https://example.com/", "//example.com/", "javascript:alert(1)", "/\\example.com/"):
             with self.subTest(target=target):
                 response = self.client.post(self.url, {**self.data, "next": target})
-                self.assertRedirects(response, reverse("capsules:list"))
+                self.assertRedirects(response, self.url)
         target = reverse("capsules:list") + "?state=draft&page=2&q=mare"
         self.assertRedirects(self.client.post(self.url, {**self.data, "next": target}), target)
 
@@ -101,7 +101,7 @@ class ProfileSettingsTests(TestCase):
         self.assertEqual(client.post(self.url, self.data).status_code, 403)
         client.get(self.url)
         response = client.post(self.url, {**self.data, "csrfmiddlewaretoken": client.cookies["csrftoken"].value})
-        self.assertRedirects(response, reverse("capsules:list"))
+        self.assertRedirects(response, self.url)
         for method in ("put", "patch", "delete"):
             self.assertEqual(getattr(self.client, method)(self.url).status_code, 405)
 
@@ -125,6 +125,14 @@ class ProfileSettingsTests(TestCase):
         self.assertContains(response, '&lt;script&gt;name&lt;/script&gt; · Profil')
         self.assertNotContains(response, "<script>name</script>")
         self.assertContains(response, f'href="{self.url}"')
+
+    def test_profile_is_a_page_and_account_deletion_remains_a_modal(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, 'id="profile-heading"')
+        self.assertContains(response, f'class="nav-user" href="{self.url}"')
+        self.assertNotContains(response, f'data-capsule-popup href="{self.url}"')
+        self.assertContains(response, f'data-capsule-popup href="{reverse("accounts:delete")}"')
+        self.assertContains(response, f'name="next" value="{self.url}"')
 
     def test_timezone_changes_display_and_input_but_not_stored_capsule_moments(self):
         opens_at = datetime(2030, 1, 15, 12, tzinfo=datetime_timezone.utc)

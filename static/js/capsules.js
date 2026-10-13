@@ -77,8 +77,6 @@
         const surface = page.querySelector('.capsule-surface');
         if (!surface) throw new Error('Missing form');
         content.replaceChildren(surface);
-        const profileReturn = content.querySelector('[data-profile-return]');
-        if (profileReturn) profileReturn.value = window.location.pathname + window.location.search;
         document.dispatchEvent(new Event('capsule-form-ready'));
         updateCountdowns();
     }

@@ -12,7 +12,7 @@
             <div class="form-field">{{ form.password.label_tag }}{{ form.password }}{{ form.password.errors }}</div>
             <label class="account-confirm-check">{{ form.confirm }}<span>{{ form.confirm.label }}</span></label>
             {{ form.confirm.errors }}
-            <div class="editor-actions"><a class="button button-quiet" data-capsule-popup href="{% url 'accounts:profile' %}">Anulează</a><button class="button button-danger" type="submit">Șterge contul definitiv</button></div>
+            <div class="editor-actions"><a class="button button-quiet" data-popup-cancel href="{% url 'accounts:profile' %}">Anulează</a><button class="button button-danger" type="submit">Șterge contul definitiv</button></div>
         </form>
     </div>
 </section>
