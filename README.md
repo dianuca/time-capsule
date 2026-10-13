@@ -156,6 +156,8 @@ Validare: 8 teste noi pentru deschidere; suita totală are 55 de teste. Răspuns
 
 ### 4. Fotografii private - implementate
 
+La lectura capsulei, fotografiile sunt afișate într-o galerie cu o imagine principală, săgeți circulare anterior/următor, indicatorul `1/N` și numele imaginii. Sunt disponibile săgețile tastaturii, Home/End și swipe orizontal pe mobil; pentru o singură imagine se afișează `1/1` fără săgeți. Galeria se inițializează și când capsula este deschisă în modal. Fără JavaScript sunt afișate toate imaginile. Accesul privat înainte de prima deschidere rămâne blocat. Testele de navigare JavaScript se rulează cu `node --test static/js/tests/capsule-gallery.test.cjs` (5 scenarii, DOM simulat); aspectul și gesturile în browser necesită verificare manuală.
+
 Branch sugerat: `feature/capsule-photos`.
 
 - [x] Model Attachment și upload în ciornă; JPEG, PNG și WebP.

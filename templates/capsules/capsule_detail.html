@@ -13,11 +13,24 @@
                 <p class="letter-written">Scrisă pe {{ capsule.created_at|date:"d.m.Y" }}{% if capsule.is_draft %} · Ciornă{% endif %}</p>
                 <div class="letter-message">{{ capsule.message|linebreaksbr }}</div>
                 {% if attachments %}
-                <div class="photo-gallery reader-gallery">
+                <section class="capsule-photo-gallery" aria-label="Fotografiile capsulei">
+                    <div class="capsule-gallery-stage">
                     {% for attachment in attachments %}
-                    <figure><img src="{% url 'capsules:image' capsule.pk attachment.pk %}" alt="{{ attachment.original_name }}" width="{{ attachment.width }}" height="{{ attachment.height }}" loading="lazy"></figure>
+                        <figure class="capsule-gallery-slide">
+                            <img src="{% url 'capsules:image' capsule.pk attachment.pk %}" alt="{{ attachment.original_name }}" width="{{ attachment.width }}" height="{{ attachment.height }}" loading="lazy">
+                            <figcaption>{{ attachment.original_name }}</figcaption>
+                        </figure>
                     {% endfor %}
-                </div>
+                        <div class="capsule-gallery-arrows" hidden>
+                            <button type="button" data-gallery-direction="-1" aria-label="Fotografia anterioară">‹</button>
+                            <button type="button" data-gallery-direction="1" aria-label="Fotografia următoare">›</button>
+                        </div>
+                    </div>
+                    <div class="capsule-gallery-footer" hidden>
+                        <span>Amintiri în imagini</span>
+                        <span class="capsule-gallery-counter" role="status" aria-live="polite" aria-atomic="true"><span data-gallery-current>1</span>/{{ attachments|length }}</span>
+                    </div>
+                </section>
                 {% endif %}
             </article>
         {% elif can_open %}
