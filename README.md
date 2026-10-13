@@ -156,7 +156,9 @@ Validare: 8 teste noi pentru deschidere; suita totală are 55 de teste. Răspuns
 
 ### 4. Fotografii private - implementate
 
-La lectura capsulei, fotografiile sunt afișate într-o galerie cu o imagine principală, săgeți circulare anterior/următor, indicatorul `1/N` și numele imaginii. Sunt disponibile săgețile tastaturii, Home/End și swipe orizontal pe mobil; pentru o singură imagine se afișează `1/1` fără săgeți. Galeria se inițializează și când capsula este deschisă în modal. Fără JavaScript sunt afișate toate imaginile. Accesul privat înainte de prima deschidere rămâne blocat. Testele de navigare JavaScript se rulează cu `node --test static/js/tests/capsule-gallery.test.cjs` (5 scenarii, DOM simulat); aspectul și gesturile în browser necesită verificare manuală.
+Stabilizarea galeriei: fotografia curentă rămâne vizibilă până când următoarea este încărcată și decodată; imaginile vecine sunt preîncărcate. Navigarea rapidă ignoră încărcările întârziate. Înălțimea cadrului și spațiul pentru numele fișierului sunt fixe, iar modalul rezervă spațiul scrollbar-ului pentru a evita salturile laterale. Cele 8 teste JavaScript includ încărcarea lentă, navigarea rapidă și erorile de decodare; cele 95 de teste Django trec. Verificarea vizuală în browser rămâne manuală.
+
+La lectura capsulei, fotografiile sunt afișate într-o galerie cu o imagine principală, săgeți circulare anterior/următor, indicatorul `1/N` și numele imaginii. Sunt disponibile săgețile tastaturii, Home/End și swipe orizontal pe mobil; pentru o singură imagine se afișează `1/1` fără săgeți. Galeria se inițializează și când capsula este deschisă în modal. Fără JavaScript sunt afișate toate imaginile. Accesul privat înainte de prima deschidere rămâne blocat. Testele de navigare JavaScript se rulează cu `node --test static/js/tests/capsule-gallery.test.cjs` (8 scenarii, DOM simulat); aspectul și gesturile în browser necesită verificare manuală.
 
 Branch sugerat: `feature/capsule-photos`.
 

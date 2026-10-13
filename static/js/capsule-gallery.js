@@ -15,16 +15,41 @@
             stage.setAttribute('aria-label', 'Galerie foto. Folosește săgețile stânga și dreapta pentru navigare.');
         }
         let index = 0;
+        let revision = 0;
         let touchStart;
-        function show(next) {
-            index = (next + slides.length) % slides.length;
+        function commit(selected) {
             slides.forEach((slide, position) => {
-                slide.hidden = position !== index;
+                slide.hidden = position !== selected;
                 slide.setAttribute('role', 'group');
                 slide.setAttribute('aria-label', `${position + 1} din ${slides.length}`);
             });
-            current.textContent = index + 1;
-            counter.setAttribute('aria-label', `Fotografia ${index + 1} din ${slides.length}`);
+            current.textContent = selected + 1;
+            counter.setAttribute('aria-label', `Fotografia ${selected + 1} din ${slides.length}`);
+        }
+        function show(next) {
+            index = (next + slides.length) % slides.length;
+            const selected = index;
+            const request = ++revision;
+            // Warm only the current image and its neighbours, not the whole album.
+            [index, (index + 1) % slides.length, (index + slides.length - 1) % slides.length].forEach(position => {
+                slides[position].querySelector('img').loading = 'eager';
+            });
+            const image = slides[selected].querySelector('img');
+            const finish = () => {
+                if (request !== revision || !gallery.isConnected) return;
+                commit(selected);
+                stage.removeAttribute('aria-busy');
+            };
+            if (typeof image.decode === 'function') {
+                stage.setAttribute('aria-busy', 'true');
+                try {
+                    Promise.resolve(image.decode()).catch(() => {}).then(finish);
+                } catch {
+                    finish();
+                }
+            } else {
+                finish();
+            }
         }
         gallery.addEventListener('click', event => {
             const button = event.target.closest('[data-gallery-direction]');
@@ -51,6 +76,7 @@
             touchStart = null;
         }, {passive: true});
         stage.addEventListener('touchcancel', () => { touchStart = null; }, {passive: true});
+        commit(0);
         show(0);
     }
     function discover(root) {

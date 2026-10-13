@@ -7,13 +7,14 @@ const source = readFileSync(join(__dirname, '..', 'capsule-gallery.js'), 'utf8')
 
 function galleryFixture(count) {
     const stageEvents = {}, galleryEvents = {};
-    const slides = Array.from({length: count}, () => ({hidden: false, setAttribute() {}}));
+    const images = Array.from({length: count}, () => ({}));
+    const slides = images.map(image => ({hidden: false, setAttribute() {}, querySelector: () => image}));
     const current = {textContent: ''};
     const counter = {setAttribute(name, value) { this[name] = value; }};
     const arrows = {hidden: true}, footer = {hidden: true};
-    const stage = {setAttribute() {}, addEventListener(name, fn) { stageEvents[name] = fn; }};
+    const stage = {setAttribute(name, value) { this[name] = value; }, removeAttribute(name) { delete this[name]; }, addEventListener(name, fn) { stageEvents[name] = fn; }};
     const gallery = {
-        nodeType: 1, dataset: {}, setAttribute() {},
+        nodeType: 1, isConnected: true, dataset: {}, setAttribute() {},
         matches: selector => selector === '.capsule-photo-gallery',
         querySelectorAll: selector => selector === '.capsule-gallery-slide' ? slides : [],
         querySelector: selector => ({
@@ -24,7 +25,7 @@ function galleryFixture(count) {
         addEventListener(name, fn) { galleryEvents[name] = fn; },
     };
     return {
-        gallery, slides, current, counter, arrows, footer, stage,
+        gallery, slides, images, current, counter, arrows, footer, stage,
         click(direction) { galleryEvents.click({target: {closest: () => ({dataset: {galleryDirection: String(direction)}})}}); },
         key(key, modifiers = {}) {
             const event = {key, ...modifiers, prevented: false, preventDefault() { this.prevented = true; }};
@@ -111,4 +112,48 @@ test('galleries inserted into a modal initialize independently and only once', (
     assert.equal(first.current.textContent, 2);
     assert.equal(second.current.textContent, 2);
     insert({nodeType: 3});
+});
+
+test('keeps the current photo visible until the next image is decoded', async () => {
+    const fixture = galleryFixture(3);
+    let ready;
+    fixture.images[1].decode = () => new Promise(resolve => { ready = resolve; });
+    boot(fixture);
+    assert.equal(fixture.images[1].loading, 'eager');
+    fixture.click(1);
+    assert.equal(fixture.current.textContent, 1);
+    assert.deepEqual(fixture.slides.map(slide => slide.hidden), [false, true, true]);
+    assert.equal(fixture.stage['aria-busy'], 'true');
+    ready();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(fixture.current.textContent, 2);
+    assert.equal(fixture.stage['aria-busy'], undefined);
+});
+
+test('rapid navigation cannot display an older image that finishes loading late', async () => {
+    const fixture = galleryFixture(3);
+    let firstReady, secondReady;
+    fixture.images[1].decode = () => new Promise(resolve => { firstReady = resolve; });
+    fixture.images[2].decode = () => new Promise(resolve => { secondReady = resolve; });
+    boot(fixture);
+    fixture.click(1);
+    fixture.click(1);
+    secondReady();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(fixture.current.textContent, 3);
+    firstReady();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(fixture.current.textContent, 3);
+    assert.deepEqual(fixture.slides.map(slide => slide.hidden), [true, true, false]);
+});
+
+test('a failed image decode does not leave navigation busy or broken', async () => {
+    const fixture = galleryFixture(2);
+    fixture.images[1].decode = () => Promise.reject(new Error('Image unavailable'));
+    boot(fixture);
+    fixture.click(1);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(fixture.stage['aria-busy'], undefined);
+    fixture.click(1);
+    assert.equal(fixture.current.textContent, 1);
 });

@@ -18,7 +18,7 @@
                     {% for attachment in attachments %}
                         <figure class="capsule-gallery-slide">
                             <img src="{% url 'capsules:image' capsule.pk attachment.pk %}" alt="{{ attachment.original_name }}" width="{{ attachment.width }}" height="{{ attachment.height }}" loading="lazy">
-                            <figcaption>{{ attachment.original_name }}</figcaption>
+                            <figcaption title="{{ attachment.original_name }}">{{ attachment.original_name }}</figcaption>
                         </figure>
                     {% endfor %}
                         <div class="capsule-gallery-arrows" hidden>
