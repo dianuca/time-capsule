@@ -16,16 +16,20 @@
             </a>
         </div>
 
+        <form method="get" class="collection-search" role="search">
+            <label for="capsule-search">Regăsește o amintire</label>
+            <div><input id="capsule-search" type="search" name="q" value="{{ query }}" maxlength="200" placeholder="Caută în titlu sau descriere…"><input type="hidden" name="state" value="{{ selected_state }}"><button class="button button-quiet" type="submit">Caută</button>{% if query %}<a href="?state={{ selected_state }}">Resetează</a>{% endif %}</div>
+        </form>
         <nav class="collection-filters" aria-label="Filtrează capsulele">
             {% for filter in filters %}
-                <a href="?state={{ filter.value }}" class="collection-filter{% if selected_state == filter.value %} is-active{% endif %}" {% if selected_state == filter.value %}aria-current="page"{% endif %}>
+                <a href="?state={{ filter.value }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" class="collection-filter{% if selected_state == filter.value %} is-active{% endif %}" {% if selected_state == filter.value %}aria-current="page"{% endif %}>
                     {{ filter.label }} <span>{{ filter.count }}</span>
                 </a>
             {% endfor %}
         </nav>
         <div class="capsule-grid">
             {% for capsule in capsules %}
-            <article class="capsule-card state-{{ capsule.ui_state }}">
+            <article class="capsule-card state-{{ capsule.ui_state }} theme-{{ capsule.theme }}">
                 <div class="capsule-card-top">
                 <span class="capsule-status">
                     {% if capsule.is_draft %}
@@ -45,6 +49,8 @@
                     </div>
                 </details>
                 </div>
+
+                <div class="keepsake-envelope" aria-hidden="true"><span class="envelope-seal">{% if capsule.ui_state == 'opened' %}♡{% elif capsule.ui_state == 'draft' %}·{% else %}✦{% endif %}</span></div>
 
                 <h2>{{ capsule.title }}</h2>
 
@@ -68,6 +74,7 @@
                         >
                             Editează ciorna ↗
                         </a>
+                        <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:seal' capsule.pk %}">Sigilează ✦</a>
                         {% elif capsule.first_opened_at %}
                         <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Citește scrisoarea ↗</a>
                         {% elif capsule.is_available %}
@@ -80,7 +87,10 @@
             {% empty %}
                 <div class="collection-empty">
                     <span class="empty-icon" aria-hidden="true">✉</span>
-                    {% if selected_state != 'all' %}
+                    {% if query %}
+                    <h2>Nicio amintire găsită.</h2>
+                    <p>Încearcă un alt cuvânt sau <a href="?state={{ selected_state }}">resetează căutarea</a>.</p>
+                    {% elif selected_state != 'all' %}
                     <h2>Nicio capsulă în această categorie.</h2>
                     <p><a href="{% url 'capsules:list' %}">Vezi toate capsulele</a></p>
                     {% else %}

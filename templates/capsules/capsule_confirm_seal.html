@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Sigilează capsula | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface seal-confirmation theme-{{ capsule.theme }}">
+        <div class="keepsake-envelope" aria-hidden="true"><span class="envelope-seal">✦</span></div>
+        <span class="eyebrow">UN GÂND TRIMIS ÎN VIITOR</span>
+        <h1 id="capsule-heading">Gata să păstrezi această amintire?</h1>
+        <p>„{{ capsule.title }}” va rămâne sigilată până pe <strong>{{ capsule.opens_at|date:"d.m.Y, H:i" }}</strong> · {{ user.timezone }}.</p>
+        <p>După sigilare, mesajul, titlul, descrierea, data și tema nu mai pot fi modificate. Poți șterge capsula oricând.</p>
+        {% if error %}<p class="errorlist" role="alert">{{ error }}</p>{% endif %}
+        {% if capsule.is_draft %}
+        <form method="post" action="{% url 'capsules:seal' capsule.pk %}">
+            {% csrf_token %}
+            <div class="editor-actions">
+                <a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Mai păstrez ciorna</a>
+                <button class="button button-primary" type="submit">Sigilează amintirea ✦</button>
+            </div>
+        </form>
+        {% else %}<p>Capsula este deja sigilată.</p>{% endif %}
+    </div>
+</section>
+{% endblock %}

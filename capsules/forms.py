@@ -5,14 +5,16 @@ from .models import Capsule
 class CapsuleForm(forms.ModelForm):
     class Meta:
         model = Capsule
-        fields = ("title", "description", "message", "opens_at")
+        fields = ("title", "description", "message", "opens_at", "theme")
         labels = {
             "title": "Titlu",
             "description": "Descriere scurtă",
             "message": "Ce vrei să-i spui versiunii tale din viitor?",
             "opens_at": "Data și ora deschiderii",
+            "theme": "Culoarea amintirii",
         }
         widgets = {
+            "theme": forms.RadioSelect(),
             "title": forms.TextInput(
                 attrs={"placeholder": "Pentru mine, peste un an"}
             ),
@@ -33,4 +35,11 @@ class CapsuleForm(forms.ModelForm):
                 "Alege o dată de deschidere din viitor."
             )
         return opens_at
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["theme"].required = False
+
+    def clean_theme(self):
+        return self.cleaned_data.get("theme") or self.instance.theme
 

@@ -19,6 +19,9 @@ class Capsule(models.Model):
     title = models.CharField(max_length=150)
     description = models.CharField(max_length=300, blank=True)
     message = models.TextField(blank=True)
+    theme = models.CharField(max_length=8, default="lilac", choices=[
+        ("lilac", "Lila"), ("cream", "Crem"), ("pink", "Roz"), ("green", "Verde"),
+    ])
 
     opens_at = models.DateTimeField()
     sealed_at = models.DateTimeField(null=True, blank=True)

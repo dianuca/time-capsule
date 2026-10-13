@@ -91,7 +91,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 
 Audit local pe branch-ul `dev`, la 13 octombrie 2026: cele 32 de teste existente au trecut înainte de modificări; după implementarea ștergerii trec 39 de teste (7 noi). `make check`, testele dedicate ștergerii și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare și deschiderea sunt implementate. Sigilarea nu are încă flux dedicat; atașamentele, reflecțiile, temele și setările/notificările V1 rămân neimplementate. Admin permite încă editarea conținutului/datei după sigilare; protecția concurenței editării/sigilării rămâne de rezolvat în etapa 2.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea și deschiderea sunt implementate. Atașamentele, reflecțiile și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -126,18 +126,18 @@ Testele verifică suplimentar CSRF, accesul staff la capsule străine, metodele 
 
 Verificarea vizuală în browser nu a fost disponibilă. Manual, pe desktop și mobil: deschide „Capsulele mele”, verifică linkul „Șterge” pe carduri, confirmarea, revenirea prin „Anulează” și mesajul de succes după ștergere.
 
-### 2. Sigilare și integritatea conținutului - următoarea prioritate
+### 2. Sigilare și integritatea conținutului - implementată
 
 Branch sugerat: `feature/capsule-seal`.
 
-- [ ] Confirmare cu data și fusul orar; explică faptul că mesajul și data nu mai pot fi modificate.
-- [ ] Sigilare numai prin POST, doar pentru proprietar și doar cu dată viitoare.
-- [ ] Cere un mesaj nevid înainte de sigilare; fotografiile sunt opționale în V1.
-- [ ] Salvează sealed_at pe server; o cerere repetată nu resetează momentul.
-- [ ] Centralizează regulile într-un service reutilizat de views și Admin unde este cazul.
-- [ ] Protejează atomic sigilarea și scrierile concurente. Alege o strategie compatibilă cu SQLite local și PostgreSQL; nu presupune că select_for_update blochează rânduri în SQLite.
-- [ ] Revizuiește editarea existentă și Admin pentru a preveni modificarea conținutului/datei după sigilare.
-- [ ] Teste pentru autorizare, dată expirată, mesaj gol, repetare și blocarea editării după sigilare.
+- [x] Confirmare cu data și fusul orar; explică faptul că mesajul și data nu mai pot fi modificate.
+- [x] Sigilare numai prin POST, doar pentru proprietar și doar cu dată viitoare.
+- [x] Cere un mesaj nevid înainte de sigilare; fotografiile sunt opționale în V1.
+- [x] Salvează sealed_at pe server; o cerere repetată nu resetează momentul.
+- [x] Centralizează regulile într-un service reutilizat de views și Admin unde este cazul.
+- [x] Protejează atomic sigilarea și scrierile concurente prin UPDATE condiționat, compatibil cu SQLite și PostgreSQL; nu depinde de select_for_update.
+- [x] Revizuiește editarea existentă și Admin pentru a preveni modificarea conținutului/datei după sigilare.
+- [x] Teste pentru autorizare, dată expirată, mesaj gol, repetare și blocarea editării după sigilare, inclusiv simularea unei sigilări în timpul validării formularului și respingerea salvării unui snapshot vechi.
 
 ### 3. Pagina capsulei și deschiderea
 
@@ -178,8 +178,8 @@ Branch sugerat: `feature/capsule-photos`.
 
 - [x] Filtre: toate, ciorne, sigilate, disponibile, deschise; stări mutual exclusive și numărători private.
 - [ ] Paginare și ordonare coerentă; păstrează filtrele în navigare.
-- [ ] Alegerea unei teme dintr-o listă fixă: lila, crem, roz, verde.
-- [ ] Tema poate fi modificată doar în ciornă; clase CSS din alegeri validate.
+- [x] Alegerea unei teme dintr-o listă fixă: lila, crem, roz, verde.
+- [x] Tema poate fi modificată doar în ciornă; clase CSS din alegeri validate.
 - [x] Afișează datele din listă în fusul utilizatorului, nu doar în fusul global Django.
 - [ ] Teste pentru filtre, paginare și fusul orar.
 
@@ -260,16 +260,18 @@ Flux dorit (planificat, neimplementat): creatorul introduce emailul destinatarul
 
 ## Preferințe UI de păstrat
 
-### Idei UI pentru etapa următoare
+### Personalitatea aplicației - implementată
 
-De implementat după popularea cu date demo:
+Implementat pe `feature/capsule-personality`, după popularea cu date demo:
 
-- [ ] Previzualizare discretă de plic pe card, adaptată stării capsulei.
-- [ ] Teme lila, crem, roz și verde, alese prin buline în formular; tema colorează cardul, starea rămâne în badge.
-- [ ] Formular cu „Despre capsulă” în stânga, „Scrisoarea ta” în dreapta și explicația „Când vrei să o redescoperi?” pentru dată.
-- [ ] Sigilare prin modal cu data aleasă, pictogramă de sigiliu și animație scurtă, respectând regulile V1 de integritate.
-- [ ] Deschidere ca o scrisoare: suprafață caldă, text lizibil, spațiu generos și data scrierii; conținutul rămâne privat înainte de termen.
-- [ ] Căutare în colecție după titlu și descriere, limitată la capsulele proprietarului.
+- [x] Previzualizare discretă de plic pe card, adaptată stării capsulei.
+- [x] Teme lila, crem, roz și verde, alese prin buline în formular; tema colorează cardul, starea rămâne în badge.
+- [x] Formular cu „Despre capsulă” în stânga, „Scrisoarea ta” în dreapta și explicația „Când vrei să o redescoperi?” pentru dată.
+- [x] Sigilare prin modal cu data aleasă, pictogramă de sigiliu și animație scurtă, respectând regulile V1 de integritate.
+- [x] Deschidere ca o scrisoare: suprafață caldă, text lizibil, spațiu generos și data scrierii; conținutul rămâne privat înainte de termen.
+- [x] Căutare în colecție după titlu și descriere, limitată la capsulele proprietarului; păstrează căutarea când schimbi filtrul.
+
+Migrarea `0002_capsule_theme` adaugă tema cu valoarea implicită lila fără pierderea datelor existente; rulează `python manage.py migrate` după actualizare. Validare: 66 de teste Django (11 noi pentru teme, căutare, sigilare, Admin și conflicte între salvări), `make check`, sintaxa JavaScript și verificarea migrărilor. Testele au fost rulate pe SQLite; PostgreSQL nu a fost disponibil local. Încercarea de captură cu Edge headless nu a produs o imagine; aspectul desktop/mobil, blurul și animațiile rămân de verificat manual în browser.
 
 ### Date demo locale
 

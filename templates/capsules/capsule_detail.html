@@ -2,7 +2,7 @@
 {% block title %}{{ capsule.title }} | Time Capsule{% endblock %}
 {% block content %}
 <section class="capsule-workspace">
-    <div class="capsule-surface capsule-reader{% if animate_open %} letter-reveal{% endif %}">
+    <div class="capsule-surface capsule-reader theme-{{ capsule.theme }}{% if animate_open %} letter-reveal{% endif %}{% if animate_seal %} seal-reveal{% endif %}">
         <span class="eyebrow">{% if can_read %}O SCRISOARE PENTRU TINE{% else %}O AMINTIRE PĂSTRATĂ{% endif %}</span>
         <h1 id="capsule-heading">{{ capsule.title }}</h1>
         <span class="capsule-status">{% if capsule.is_draft %}Ciornă{% elif can_read %}Deschisă{% elif can_open %}Disponibilă{% else %}Sigilată{% endif %}</span>
@@ -14,14 +14,14 @@
                 <div class="letter-message">{{ capsule.message|linebreaksbr }}</div>
             </article>
         {% elif can_open %}
-            <div class="opening-envelope" aria-hidden="true">✉</div>
+            <div class="keepsake-envelope" aria-hidden="true"><span class="envelope-seal">✦</span></div>
             <p>Momentul a sosit. Ia-ți o clipă pentru tine și redescoperă ce ai păstrat.</p>
             <form method="post" action="{% url 'capsules:detail' capsule.pk %}">
                 {% csrf_token %}
                 <button class="button button-primary" type="submit">Deschide scrisoarea</button>
             </form>
         {% else %}
-            <div class="opening-envelope" aria-hidden="true">✉</div>
+            <div class="keepsake-envelope" aria-hidden="true"><span class="envelope-seal">✦</span></div>
             <p>Capsula este sigilată. Mesajul va putea fi deschis la data afișată mai sus.</p>
             <p class="capsule-countdown" data-opens-at="{{ capsule.opens_at|date:'c' }}" data-detail-url="{% url 'capsules:detail' capsule.pk %}" aria-live="off"></p>
         {% endif %}

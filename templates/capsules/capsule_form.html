@@ -26,13 +26,25 @@
 
                 {{ form.non_field_errors }}
 
-                {% for field in form %}
-                    <div class="form-field field-{{ field.name }}">
-                        {{ field.label_tag }}
-                        {{ field }}
-                        {{ field.errors }}
+                <fieldset class="editor-about">
+                    <legend>Despre capsulă</legend>
+                    <div class="form-field">{{ form.title.label_tag }}{{ form.title }}{{ form.title.errors }}</div>
+                    <div class="form-field">{{ form.description.label_tag }}{{ form.description }}{{ form.description.errors }}</div>
+                    <div class="form-field">{{ form.opens_at.label_tag }}{{ form.opens_at }}{{ form.opens_at.errors }}<small>Când vrei să o redescoperi? Ora este în {{ user.timezone }}.</small></div>
+                    <fieldset class="theme-picker">
+                        <legend>{{ form.theme.label }}</legend>
+                        {% for radio in form.theme %}
+                            <label class="theme-option theme-{{ radio.data.value }}">{{ radio.tag }}<span class="theme-dot" aria-hidden="true"></span><span>{{ radio.choice_label }}</span></label>
+                        {% endfor %}
+                        {{ form.theme.errors }}
+                    </fieldset>
+                </fieldset>
+                <fieldset class="editor-letter">
+                    <legend>Scrisoarea ta</legend>
+                    <div class="form-field field-message">
+                        {{ form.message.label_tag }}{{ form.message }}{{ form.message.errors }}
                     </div>
-                {% endfor %}
+                </fieldset>
 
                 <p class="help-text">
                     Ora este interpretată în fusul
