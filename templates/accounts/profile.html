@@ -33,14 +33,14 @@
             <div class="form-field">{{ form.timezone.label_tag }}{{ form.timezone }}{{ form.timezone.errors }}<p class="help-text" id="{{ form.timezone.id_for_label }}_helptext">{{ form.timezone.help_text }}</p></div>
             <label class="profile-email-toggle">{{ form.email_notifications_enabled }}<span>{{ form.email_notifications_enabled.label }}<small>Alege dacă vrei notificări când capsulele sunt pregătite de deschidere. Notificările prin email nu sunt încă active.</small></span></label>
             {{ form.email_notifications_enabled.errors }}
-            <p class="profile-account-detail">Cont: {{ user.username }}{% if user.email %} · {{ user.email }}{% endif %}</p>
-            <div class="editor-actions"><a class="button button-quiet" href="{% url 'capsules:list' %}">Înapoi la capsule</a><button class="button button-primary" type="submit">Salvează preferințele</button></div>
-        </form>
+            <p class="profile-account-detail">Cont: {{ user.username }}</p>
         <div class="profile-email-status">
-            <span>{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span>
+            <span><strong>{{ user.email|default:"Adaugă o adresă de email" }}</strong><span class="profile-email-label">{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span></span>
             <a {% if not user.email_is_verified %}class="button button-danger profile-email-confirm"{% endif %} data-capsule-popup href="{% url 'accounts:email_settings' %}" aria-label="{% if user.email_is_verified %}Schimbă adresa de email{% else %}Confirmă adresa de email{% endif %}">{% if user.email_is_verified %}Schimbă{% else %}Confirmă emailul{% endif %}</a>
             {% if user.pending_email %}<small>Confirmare în așteptare: {{ user.pending_email }}</small>{% endif %}
         </div>
+            <div class="editor-actions"><a class="button button-quiet" href="{% url 'capsules:list' %}">Înapoi la capsule</a><button class="button button-primary" type="submit">Salvează preferințele</button></div>
+        </form>
         <div class="profile-danger-zone"><a class="capsule-delete-link" data-capsule-popup href="{% url 'accounts:delete' %}">Șterge contul</a></div>
         </div>
     </div>
