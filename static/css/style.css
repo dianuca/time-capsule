@@ -1239,6 +1239,15 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .letter-written { margin: 0 0 20px; }
 .reflection-summary { margin-top: 24px; padding: 20px; border: 1px solid var(--envelope-edge, #c9b5df); border-radius: 16px; background: linear-gradient(135deg, var(--card-tint, #f2ecfa), #fffdf980); }
 .profile-settings { max-width: 650px; }
+.profile-danger-zone { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); text-align: right; }
+.account-deletion { max-width: 560px; }
+.capsule-dialog:has(.account-deletion) { max-width: 640px; }
+.account-deletion strong { font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.account-deletion-counts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.account-deletion-counts span { padding: 5px 10px; border-radius: 999px; background: #f5e5e9; color: #93566b; font-size: 12px; }
+.account-confirm-check { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.account-confirm-check input { margin-top: 4px; accent-color: #a34d61; }
+.account-deletion button { font: inherit; font-size: 13px; cursor: pointer; }
 .capsule-dialog:has(.profile-settings) { max-width: 720px; }
 .profile-name-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .profile-settings select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 13px; background: #fff; color: var(--text); font: inherit; font-size: 14px; }

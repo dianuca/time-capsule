@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Șterge contul | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface account-deletion">
+        <span class="delete-symbol" aria-hidden="true">×</span>
+        <h1 id="capsule-heading">Șterge contul</h1>
+        <p>Toate amintirile din contul <strong>{{ user.username }}</strong> vor fi șterse, inclusiv capsulele sigilate și cele deschise. Acțiunea este definitivă.</p>
+        <div class="account-deletion-counts"><span>{{ capsule_count }} capsul{{ capsule_count|pluralize:"ă,e" }}</span><span>{{ photo_count }} fotografi{{ photo_count|pluralize:"e,i" }}</span><span>{{ reflection_count }} reflecți{{ reflection_count|pluralize:"e,i" }}</span></div>
+        <form method="post" action="{% url 'accounts:delete' %}">
+            {% csrf_token %}{{ form.non_field_errors }}
+            <div class="form-field">{{ form.password.label_tag }}{{ form.password }}{{ form.password.errors }}</div>
+            <label class="account-confirm-check">{{ form.confirm }}<span>{{ form.confirm.label }}</span></label>
+            {{ form.confirm.errors }}
+            <div class="editor-actions"><a class="button button-quiet" data-capsule-popup href="{% url 'accounts:profile' %}">Anulează</a><button class="button button-danger" type="submit">Șterge contul definitiv</button></div>
+        </form>
+    </div>
+</section>
+{% endblock %}

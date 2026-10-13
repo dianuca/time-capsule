@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 125 de teste Django trec, inclusiv 12 teste noi pentru profil; cele 14 teste JavaScript pentru galerie și căutare/paginare trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 137 de teste Django trec, inclusiv 12 teste noi pentru ștergerea contului; cele 14 teste JavaScript pentru galerie și căutare/paginare trec. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile și setările profilului sunt implementate. Resetarea parolei, ștergerea contului, verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului și ștergerea contului sunt implementate. Resetarea parolei, verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -213,11 +213,13 @@ Colecția afișează 12 capsule pe pagină, ordonate descrescător după `create
 
 Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea, fără reload; căutarea și schimbarea filtrului pornesc de la pagina 1. Câmpul de căutare își păstrează focusul la tastare; navigarea între pagini mută focusul la rezultate. Fără JavaScript funcționează linkurile GET. Testele JavaScript: `node --test static/js/tests/*.test.cjs` (14 scenarii, DOM simulat). Verificare manuală pe desktop/mobil: paginile 1/2 pentru datele demo, căutare din pagina 2, filtrare, resetare, navigare cu tastatura și ștergerea ultimei capsule de pe o pagină. Browserul nu a fost verificat vizual în această etapă.
 
-### 7. Cont, parole și notificări - resetarea parolei este următoarea prioritate
+### 7. Cont, parole și notificări
+
+Resetarea parolei prin email este amânată la cererea utilizatorului; nu o începe automat ca următor pas.
 
 - [x] Setări profil: prenume/nume, fus orar IANA validat și preferință email.
 - [ ] Resetare parolă prin email și template-uri coerente vizual.
-- [ ] Ștergere cont cu confirmare și eliminarea datelor/fișierelor asociate.
+- [x] Ștergere cont cu confirmare, verificarea parolei și eliminarea datelor/fișierelor asociate.
 - [ ] Definește și implementează verificarea adresei de email înainte de notificări; tratează schimbarea adresei și eventualele duplicate fără pierderea conturilor existente.
 - [ ] Comandă Django periodică pentru notificări de deschidere, cu evidență per capsulă și destinatar.
 - [ ] Retry pentru erori; limite și idempotență pentru a reduce duplicatele. Preferința dezactivată oprește emailurile.
@@ -229,6 +231,14 @@ Profilul se deschide din linkul cu numele utilizatorului și „Profil”, în h
 Fusurile orare provin din `zoneinfo.available_timezones()`; valorile necunoscute sunt respinse. Schimbarea fusului modifică doar afișarea și interpretarea intrărilor viitoare, fără a muta momentele capsulelor deja stocate în UTC. Testele verifică inclusiv orele ambigue/inexistente la schimbarea orei. Preferința email este salvată, dar serviciul de notificări nu este încă implementat. Emailul, username-ul, parola și permisiunile nu pot fi modificate prin acest formular; sunt salvate explicit doar cele patru câmpuri de profil.
 
 Validare: 12 teste noi pentru autorizare, CSRF, validare, preferință, revenire sigură, izolarea utilizatorilor și integrarea fusului orar. Total: 125 de teste Django și 14 teste JavaScript trec; nu sunt necesare migrări. Verificarea vizuală rămâne manuală: deschide „Profil” din pagina 2 a colecției cu un filtru/căutare, schimbă numele, fusul orar și preferința, salvează și verifică header-ul, păstrarea navigării și datele capsulelor; verifică și anularea, o eroare de validare și layout-ul mobil.
+
+Ștergerea contului: „Profil” → „Șterge contul” deschide un modal cu numărul capsulelor, fotografiilor și reflecțiilor, fără conținut privat. GET doar confirmă; POST cu CSRF cere parola curentă și bifarea confirmării. Identitatea vine exclusiv din `request.user`; datele altui utilizator nu pot fi vizate prin POST. Conturile fără parolă locală utilizabilă nu pot trece de această confirmare.
+
+Serviciul revalidează hash-ul parolei și starea activă, apoi blochează contul și capsulele înainte de colectarea ștergerilor în cascadă. SQLite obține blocarea pentru scriere prin UPDATE; PostgreSQL folosește suplimentar `select_for_update()` pe cont pentru a serializa inserările capsulelor cu ștergerea. La succes, sesiunea curentă este închisă și utilizatorul revine la homepage; celelalte sesiuni nu mai pot autentifica un cont inexistent.
+
+Capsulele în toate stările, atașamentele și reflecțiile sunt eliminate din DB în aceeași tranzacție. Curățarea fișierelor se execută după commit, prin mecanismul existent `PendingFileDeletion`; erorile păstrează joburile pentru `python manage.py cleanup_private_files`. Rollback-ul păstrează contul activ, înregistrările și fișierele. Politica backup-urilor rămâne de definit la etapa de lansare.
+
+Validare: 12 teste noi pentru confirmare, parolă, CSRF, metode HTTP, izolarea conturilor, sesiuni, schimbarea parolei în timpul validării, rollback și erori storage. Total: 137 teste Django și 14 JavaScript trec; nu sunt necesare migrări. PostgreSQL și aspectul în browser nu au fost verificate local. Testare manuală numai pe un cont de probă: anulare, parolă greșită, confirmare lipsă, apoi ștergere cu capsule/fotografii/reflecții. Nu folosi contul personal sau contul demo principal pentru testarea manuală a ștergerii.
 
 ### 8. Lansare V1
 
