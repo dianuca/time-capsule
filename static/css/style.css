@@ -35,6 +35,14 @@ a:focus-visible {
     outline-offset: 5px;
 }
 
+button:focus-visible, summary:focus-visible, input[type="checkbox"]:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+.skip-link { position: fixed; top: 8px; left: 16px; z-index: 100; padding: 10px 16px; border-radius: 10px; background: #fffdf9; color: var(--accent-dark); transform: translateY(-180%); }
+.skip-link:focus { transform: translateY(0); }
+#main-content:focus { outline: none; }
+
 .site-header,
 .page-content,
 .site-footer {
@@ -1053,7 +1061,10 @@ h1 {
     scrollbar-gutter: stable;
     width: min(1120px, calc(100% - 64px));
     max-width: none;
+    max-height: calc(100vh - 32px);
     max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 28px 36px;
     border: 0;
     outline: none;
@@ -1314,4 +1325,20 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
     .capsule-edit-link {
         transition: none;
     }
+}
+
+@media (max-width: 760px) {
+    .form-field input, .form-field textarea, .profile-settings select,
+    .collection-search input[type="search"] { font-size: 16px; }
+    .capsule-surface h1, .auth-card h1 { overflow-wrap: anywhere; }
+    .capsule-editor-form .field-message textarea { resize: vertical; }
+}
+@media (pointer: coarse) {
+    .dialog-close, .toast-close, .capsule-gallery-arrows button,
+    .collection-search button { min-width: 44px; min-height: 44px; }
+    .capsule-menu summary { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
+    .collection-filter, .collection-pagination a, .profile-email-status .profile-email-confirm { min-height: 44px; }
+    .collection-search input[type="search"] { padding-right: 54px; min-height: 48px; }
+    .photo-remove-mark, .new-photo-preview button { min-width: 24px; min-height: 24px; }
+    .capsule-dialog { padding-top: 58px; }
 }

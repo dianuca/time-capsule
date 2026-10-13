@@ -18,6 +18,7 @@
                     // The server, rather than the browser clock, authorizes the action.
                     if (surface && !surface.querySelector('[data-opens-at]')) {
                         element.closest('.capsule-reader').replaceWith(surface);
+                        document.dispatchEvent(new Event('capsule-form-ready'));
                     }
                 }).catch(() => {});
             }
@@ -72,6 +73,17 @@
     let opener;
     let busy = false;
 
+    document.addEventListener('capsule-form-ready', () => {
+        const heading = content.querySelector('h1');
+        if (heading) heading.id = 'capsule-dialog-heading';
+    });
+
+    function focusHeading() {
+        const heading = document.querySelector('.page-content h1');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus();
+    }
+
     function fill(html) {
         const page = new DOMParser().parseFromString(html, 'text/html');
         const surface = page.querySelector('.capsule-surface');
@@ -83,11 +95,11 @@
 
     document.addEventListener('click', async (event) => {
         const link = event.target.closest('[data-capsule-popup]');
-        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (!link || event.button > 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         if (busy) return;
         busy = true;
-        opener = link;
+        if (!dialog.open) opener = link;
         try {
             const response = await fetch(link.href);
             if (!response.ok || response.redirected) throw new Error('Unavailable');
@@ -118,7 +130,8 @@
     });
     dialog.addEventListener('close', () => {
         content.replaceChildren();
-        opener?.focus();
+        if (opener?.isConnected) opener.focus();
+        else focusHeading();
     });
     dialog.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -164,8 +177,14 @@
                     photoInput.files = transfer.files;
                     document.dispatchEvent(new Event('capsule-form-ready'));
                 }
-                content.querySelector('.errorlist')?.setAttribute('role', 'alert');
-                content.querySelector('[aria-invalid="true"], input:not([type="hidden"]), textarea')?.focus();
+                const error = content.querySelector('.errorlist');
+                error?.setAttribute('role', 'alert');
+                const invalid = content.querySelector('[aria-invalid="true"]');
+                if (invalid) invalid.focus();
+                else if (error) {
+                    error.setAttribute('tabindex', '-1');
+                    error.focus();
+                } else content.querySelector('input:not([type="hidden"]), textarea, select')?.focus();
             } else {
                 throw new Error('Request failed');
             }

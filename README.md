@@ -89,7 +89,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 176 de teste Django și 17 teste JavaScript trec, inclusiv 17 teste pentru verificarea emailului și 11 pentru resetarea parolei. Migrarea `accounts.0003` este aplicată local. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check` și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 176 de teste Django și 23 teste JavaScript trec, inclusiv 17 teste pentru verificarea emailului, 11 pentru resetarea parolei și 6 JavaScript pentru focusul modalelor. Migrarea `accounts.0003` este aplicată local. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check` și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
 Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului, ștergerea contului, resetarea parolei și verificarea emailului sunt implementate. Notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
@@ -264,12 +264,19 @@ Validare: 12 teste noi pentru confirmare, parolă, CSRF, metode HTTP, izolarea c
 ### 8. Lansare V1
 
 - [ ] UX pentru succes/erori, accesibilitate cu tastatura și layout pe mobil.
+- [x] Corecții de accesibilitate: link „Sari la conținut”, titlu distinct pentru dialog, focus restaurat după navigarea între modale și focus corect la erori.
+- [x] Adaptări mobile în CSS: câmpuri de 16px pentru a evita zoom-ul automat la focalizare în iOS, controale tactile principale de minimum 44px, modal limitat la viewport și scroll intern pentru ecrane mici; scrisoarea poate fi redimensionată vertical pe mobil. Galerie păstrată cu proporții originale și `scale-down`.
+- [ ] Validare manuală desktop/mobil și cu cititor de ecran, inclusiv zoom 200%, tastatură virtuală și dispozitive tactile reale.
 - [ ] HTTPS, DEBUG=False, ALLOWED_HOSTS și configurația secretelor pentru producție.
 - [ ] PostgreSQL, storage privat persistent și sarcina periodică configurate.
 - [ ] Backup pentru DB și fișiere; restaurare verificată.
 - [ ] Documentează retenția backup-urilor, limitele stocării și ștergerea datelor.
 - [ ] README cu setup reproductibil și configurație email; `.env.example` fără secrete dacă proiectul folosește .env.
 - [ ] Testele și verificările de producție relevante trec.
+
+Verificările de cod și testele cu DOM simulat nu înlocuiesc verificarea vizuală sau arborele de accesibilitate al browserului. Parcurge cu Tab/Shift+Tab linkul de salt, meniurile, modalele și galeria; Escape trebuie să închidă modalul și să readucă focusul pe acțiunea inițială, inclusiv după navigarea între modale. Trimite un formular cu un câmp invalid și apoi cu eroare generală: focusul trebuie să ajungă la problema afișată. Pe mobil verifică lățimi de 320/375/768px, orientare landscape și tastatura deschisă, fără overflow orizontal sau controale inaccesibile. Verifică și preferința de mișcare redusă. Checklist-ul general UX rămâne deschis până la aceste verificări manuale.
+
+Configurarea SMTP și continuarea notificărilor sunt amânate la cererea utilizatorului, pentru revenirea pe laptopul personal. Nu sunt necesare credențiale de email pentru verificările UX locale.
 
 ## V2 - Multimedia și organizare
 
