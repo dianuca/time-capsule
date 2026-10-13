@@ -38,7 +38,7 @@
         </form>
         <div class="profile-email-status">
             <span>{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span>
-            <a data-capsule-popup href="{% url 'accounts:email_settings' %}" aria-label="{% if user.email_is_verified %}Schimbă adresa de email{% else %}Confirmă sau schimbă adresa de email{% endif %}">{% if user.email_is_verified %}Schimbă{% else %}Confirmă / schimbă{% endif %}</a>
+            <a {% if not user.email_is_verified %}class="button button-danger profile-email-confirm"{% endif %} data-capsule-popup href="{% url 'accounts:email_settings' %}" aria-label="{% if user.email_is_verified %}Schimbă adresa de email{% else %}Confirmă adresa de email{% endif %}">{% if user.email_is_verified %}Schimbă{% else %}Confirmă emailul{% endif %}</a>
             {% if user.pending_email %}<small>Confirmare în așteptare: {{ user.pending_email }}</small>{% endif %}
         </div>
         <div class="profile-danger-zone"><a class="capsule-delete-link" data-capsule-popup href="{% url 'accounts:delete' %}">Șterge contul</a></div>

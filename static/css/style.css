@@ -1272,8 +1272,9 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .profile-email-toggle input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--accent); flex-shrink: 0; }
 .profile-email-toggle small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
 .profile-account-detail { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
-.profile-email-status { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-top: 16px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.profile-email-status { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 16px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
 .profile-email-status a { font-size: 12px; text-underline-offset: 3px; }
+.profile-email-status .profile-email-confirm { min-height: 34px; padding: 7px 12px; border-radius: 10px; font-weight: 600; text-decoration: none; }
 .profile-email-status small { flex-basis: 100%; font-size: 11px; }
 .profile-settings button { font: inherit; font-size: 14px; cursor: pointer; }
 @media (max-width: 600px) { .profile-name-fields { grid-template-columns: 1fr; gap: 0; } }
