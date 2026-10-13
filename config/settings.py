@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -130,6 +131,21 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+if os.environ.get("SMTP_HOST"):
+    MAILERS["default"] = {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": os.environ["SMTP_HOST"],
+            "port": int(os.environ.get("SMTP_PORT", "587")),
+            "username": os.environ.get("SMTP_USER", ""),
+            "password": os.environ.get("SMTP_PASSWORD", ""),
+            "use_tls": os.environ.get("SMTP_TLS", "true").lower() == "true",
+            "use_ssl": os.environ.get("SMTP_SSL", "false").lower() == "true",
+            "timeout": 15,
+        },
+    }
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Time Capsule <noreply@localhost>")
+PASSWORD_RESET_TIMEOUT = 3600
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "capsules:home"
 LOGOUT_REDIRECT_URL = "capsules:home"

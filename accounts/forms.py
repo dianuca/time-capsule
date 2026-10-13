@@ -1,8 +1,25 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
+from django.utils.translation import override
 from .models import User
 from zoneinfo import available_timezones
 from capsules.photo_services import validate_photo
+
+
+class ResetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        with override("ro"):
+            super().__init__(*args, **kwargs)
+        self.fields["new_password1"].label = "Parola nouă"
+        self.fields["new_password2"].label = "Confirmă parola nouă"
+        self.fields["new_password1"].help_text = "Folosește cel puțin 8 caractere. Evită datele personale, parolele comune și parolele formate doar din cifre."
+        self.fields["new_password2"].help_text = "Introdu aceeași parolă pentru confirmare."
+        for field in self.fields.values():
+            field.error_messages["required"] = "Completează acest câmp."
+
+    def clean(self):
+        with override("ro"):
+            return super().clean()
 
 
 class AccountDeletionForm(forms.Form):

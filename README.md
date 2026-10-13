@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 148 de teste Django și 17 teste JavaScript trec, inclusiv 10 teste Django și 3 JavaScript pentru avatar. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 159 de teste Django și 17 teste JavaScript trec, inclusiv 11 teste pentru resetarea parolei. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check` și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului și ștergerea contului sunt implementate. Resetarea parolei, verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului, ștergerea contului și resetarea parolei sunt implementate. Verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -217,10 +217,16 @@ Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea,
 
 Avatarul profilului este mărit la 210px și centrat imediat sub titlul „Profilul tău”; descrierea apare dedesubt, după controalele fotografiei. Coloana introductivă este centrată și pe mobil.
 
-Resetarea parolei prin email este amânată la cererea utilizatorului; nu o începe automat ca următor pas.
+Resetarea parolei prin email a fost reluată la cererea utilizatorului și este implementată prin linkul „Ai uitat parola?” de la autentificare.
 
 - [x] Setări profil: prenume/nume, fus orar IANA validat, preferință email și fotografie cu avatar implicit.
-- [ ] Resetare parolă prin email și template-uri coerente vizual.
+- [x] Resetare parolă prin email și template-uri coerente vizual.
+
+Fluxul folosește tokenurile Django, valabile o oră și invalidate după schimbarea parolei. Nu autentifică automat utilizatorul; sesiunile vechi devin invalide. Confirmarea cererii este identică pentru adrese cunoscute și necunoscute. Conturile inactive sau fără parolă utilizabilă nu primesc email. Adresele duplicate existente păstrează comportamentul Django: câte un mesaj identificat prin username și un link distinct pentru fiecare cont eligibil. Unicitatea și verificarea emailului rămân de implementat separat.
+
+În dezvoltare, fără `SMTP_HOST`, mesajul și linkul apar în terminalul serverului, nu în inbox. Pentru SMTP setează variabilele de mediu `SMTP_HOST`, `SMTP_PORT` (implicit 587), `SMTP_USER`, `SMTP_PASSWORD` și `DEFAULT_FROM_EMAIL` (adresă autorizată de furnizor). `SMTP_TLS=true` este implicit; pentru SSL pe portul 465 setează `SMTP_TLS=false` și `SMTP_SSL=true`. TLS și SSL nu se activează simultan. Setările folosesc `MAILERS` din Django; nu se încarcă automat fișiere `.env`. Nu salva credențialele în Git. Repornește serverul după configurare. În producție sunt necesare și `ALLOWED_HOSTS` corect configurat, HTTPS și configurarea sigură a proxy-ului pentru linkuri HTTPS. Livrarea reală printr-un furnizor SMTP nu a fost verificată local.
+
+Cele 11 teste dedicate verifică cererea, linkul HTTPS, răspunsul generic, conturile neeligibile, validarea parolei, tokenurile expirate/refolosite, invalidarea sesiunilor, CSRF, hosturi nepermise și adrese duplicate. Emailul conține doar identificarea contului și linkul de resetare, fără conținutul capsulelor.
 - [x] Ștergere cont cu confirmare, verificarea parolei și eliminarea datelor/fișierelor asociate.
 - [ ] Definește și implementează verificarea adresei de email înainte de notificări; tratează schimbarea adresei și eventualele duplicate fără pierderea conturilor existente.
 - [ ] Comandă Django periodică pentru notificări de deschidere, cu evidență per capsulă și destinatar.
