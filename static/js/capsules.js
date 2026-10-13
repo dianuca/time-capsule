@@ -77,6 +77,7 @@
         const surface = page.querySelector('.capsule-surface');
         if (!surface) throw new Error('Missing form');
         content.replaceChildren(surface);
+        document.dispatchEvent(new Event('capsule-form-ready'));
         updateCountdowns();
     }
 
@@ -152,9 +153,17 @@
                 main.querySelector('h1')?.setAttribute('tabindex', '-1');
                 main.querySelector('h1')?.focus();
             } else if (response.ok) {
+                const selectedPhotos = Array.from(form.querySelector('[data-photo-input]')?.files || []);
                 fill(await response.text());
+                const photoInput = content.querySelector('[data-photo-input]');
+                if (photoInput && selectedPhotos.length && typeof DataTransfer === 'function') {
+                    const transfer = new DataTransfer();
+                    selectedPhotos.forEach(file => transfer.items.add(file));
+                    photoInput.files = transfer.files;
+                    document.dispatchEvent(new Event('capsule-form-ready'));
+                }
                 content.querySelector('.errorlist')?.setAttribute('role', 'alert');
-                content.querySelector('input, textarea')?.focus();
+                content.querySelector('[aria-invalid="true"], input:not([type="hidden"]), textarea')?.focus();
             } else {
                 throw new Error('Request failed');
             }

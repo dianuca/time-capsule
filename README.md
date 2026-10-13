@@ -89,7 +89,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 85 de teste trec, inclusiv 19 teste noi pentru fotografii. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 95 de teste trec, inclusiv 19 teste pentru fotografii și 10 teste pentru integrarea lor în formular. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
 Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea, deschiderea și fotografiile private sunt implementate. Reflecțiile și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
@@ -168,13 +168,17 @@ Branch sugerat: `feature/capsule-photos`.
 
 Instalare: `python -m pip install -r requirements.txt`, apoi `python manage.py migrate`. Pillow 12.3.0 este folosit pentru decodare, verificare și resalvarea pixelilor; metadatele EXIF/GPS și datele adăugate după imagine sunt eliminate. Imaginile animate sunt respinse. Formatul este determinat din conținut, nu din extensie sau MIME-ul trimis de browser. Fișierul `requirements.txt` este acum UTF-8 pentru editare reproductibilă.
 
-În colecție, alege „Fotografii” pe o ciornă salvată. Modalul permite selectarea mai multor imagini și eliminarea celor existente. Formularul principal rămâne compact; fotografiile se gestionează separat după salvarea mesajului. După sigilare, endpoint-ul imaginilor refuză accesul până la prima deschidere, chiar dacă termenul a trecut. HTML-ul capsulelor blocate nu include imaginile sau URL-urile lor.
+Fotografiile sunt integrate în formularul de creare/editare, sub scrisoare; nu există buton separat în colecție. „Adaugă” permite selectarea mai multor imagini, cu miniaturi locale și renunțare înainte de salvare. Selectările succesive se cumulează. Bifează o imagine existentă pentru eliminare; o poți debifa înainte de salvare. Mesajul, tema, data, imaginile noi și eliminările se salvează în aceeași tranzacție. Anularea formularului nu modifică imaginile existente. Limita de 10 se aplică totalului rămas, deci poți înlocui imagini când capsula este deja la limită.
+
+În modal, fișierele selectate sunt păstrate după erorile de validare în browserele care permit reconstruirea selecției prin `DataTransfer`. Previzualizările folosesc URL-uri blob temporare, eliberate la închidere sau schimbarea selecției. Fără JavaScript funcționează formularul multipart și bifele de eliminare; după o eroare la submit trebuie reselectate fișierele noi.
+
+După sigilare, endpoint-ul imaginilor refuză accesul până la prima deschidere, chiar dacă termenul a trecut. HTML-ul capsulelor blocate nu include imaginile sau URL-urile lor.
 
 Storage local: `PRIVATE_MEDIA_ROOT` din `config/settings.py` indică `private_media/`, exclus din Git. Nu configura servirea publică a acestui director în Django sau în proxy. Pentru producție trebuie configurat un volum privat persistent și inclus în backup, împreună cu DB; setează în proxy limite de upload potrivite pentru maximum 10 fișiere de 5 MB. Configurarea producției rămâne în etapa 8.
 
 La ștergerea unei imagini, capsule sau a unui cont, se creează în aceeași tranzacție un job `PendingFileDeletion`; fișierul este eliminat numai după commit. Erorile sunt înregistrate și păstrate pentru reîncercare: `python manage.py cleanup_private_files`. Comanda poate fi rulată periodic și după un incident storage; la oprirea procesului înainte de callback, jobul rămâne în DB. Upload-urile parțial eșuate anulează înregistrările și programează curățarea fișierelor deja scrise. Un rollback al ștergerii păstrează fișierele.
 
-Validare locală pe SQLite: cele 19 teste noi și suita totală de 85 de teste trec. PostgreSQL și verificarea vizuală în browser nu au fost disponibile. Manual pe desktop/mobil: încarcă JPEG/PNG/WebP într-o ciornă, verifică previzualizarea, elimină o imagine, sigilează capsula și verifică blocarea imaginilor; la termen deschide capsula și verifică galeria. Verifică și un fișier invalid, limita de imagini și o încărcare fără fișiere.
+Validare locală pe SQLite: 95 de teste trec, inclusiv 10 teste noi pentru creare cu fotografii, înlocuire la limită, eliminări străine refuzate, validare, conflicte cu sigilarea și rollback comun pentru mesaj/fișiere. PostgreSQL și verificarea vizuală în browser nu au fost disponibile. Manual pe desktop/mobil: creează o capsulă cu JPEG/PNG/WebP, verifică miniaturile, apoi editează mesajul și înlocuiește o imagine la aceeași salvare. Verifică renunțarea la o imagine nouă, anularea eliminării uneia existente, anularea formularului, limita de 10, un fișier invalid și păstrarea selecției după o eroare de validare. Sigilează și verifică blocarea imaginilor; la termen deschide capsula și verifică galeria.
 
 ### 5. Reflecția după deschidere - următoarea prioritate
 

@@ -15,9 +15,9 @@ from math import ceil
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ValidationError
-from .services import DRAFT_FIELDS, seal_capsule, update_draft
+from .services import DRAFT_FIELDS, seal_capsule
 from .models import Attachment
-from .photo_services import add_photos, remove_photo
+from .photo_services import add_photos, remove_photo, save_capsule_with_photos
 from django.http import FileResponse, Http404
 from django.views.decorators.http import require_POST, require_safe
 import logging
@@ -188,14 +188,22 @@ def capsule_list(request):
 def capsule_create(request):
     with timezone.override(ZoneInfo(request.user.timezone)):
         if request.method == "POST":
-            form = CapsuleForm(request.POST)
+            form = CapsuleForm(request.POST, request.FILES)
 
             if form.is_valid():
                 capsule = form.save(commit=False)
                 capsule.owner = request.user
-                capsule.save()
-
-                return redirect("capsules:list")
+                try:
+                    save_capsule_with_photos(
+                        capsule, {name: form.cleaned_data[name] for name in DRAFT_FIELDS},
+                        form.cleaned_data["photos"],
+                    )
+                    return redirect("capsules:list")
+                except ValidationError as exc:
+                    form.add_error(None, exc)
+                except OSError:
+                    logging.getLogger(__name__).exception("Capsule creation with photos failed.")
+                    form.add_error(None, "Capsula nu a putut fi salvată. Selectează din nou fotografiile și încearcă din nou.")
         else:
             form = CapsuleForm()
 
@@ -219,13 +227,22 @@ def capsule_edit(request, pk):
         )
     with timezone.override(ZoneInfo(request.user.timezone)):
         if request.method == "POST":
-            form = CapsuleForm(request.POST, instance=capsule)
+            form = CapsuleForm(request.POST, request.FILES, instance=capsule)
             if form.is_valid():
                 try:
-                    update_draft(capsule, {name: form.cleaned_data[name] for name in DRAFT_FIELDS})
+                    save_capsule_with_photos(
+                        capsule, {name: form.cleaned_data[name] for name in DRAFT_FIELDS},
+                        form.cleaned_data["photos"],
+                        [photo.pk for photo in form.cleaned_data["remove_photos"]],
+                    )
+                    return redirect("capsules:list")
                 except ValidationError as exc:
-                    return HttpResponseForbidden(" ".join(exc.messages))
-                return redirect("capsules:list")
+                    if not Capsule.objects.filter(pk=pk, owner=request.user, sealed_at__isnull=True).exists():
+                        return HttpResponseForbidden(" ".join(exc.messages))
+                    form.add_error(None, exc)
+                except OSError:
+                    logging.getLogger(__name__).exception("Capsule editing with photos failed.")
+                    form.add_error(None, "Modificările nu au fost salvate. Selectează din nou fotografiile și încearcă din nou.")
         else:
             form = CapsuleForm(instance=capsule)
         return render(

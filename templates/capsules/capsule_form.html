@@ -21,10 +21,11 @@
                 cât timp capsula este o ciornă.
             </p>
 
-            <form method="post" action="{{ request.path }}" class="capsule-editor-form">
+            <form method="post" enctype="multipart/form-data" action="{{ request.path }}" class="capsule-editor-form">
                 {% csrf_token %}
 
                 {{ form.non_field_errors }}
+                {% if form.errors %}<noscript><p class="help-text">Selectează din nou fotografiile înainte de a retrimite formularul.</p></noscript>{% endif %}
 
                 <fieldset class="editor-about">
                     <legend>Despre capsulă</legend>
@@ -44,10 +45,30 @@
                     <div class="form-field field-message">
                         {{ form.message.label_tag }}{{ form.message }}{{ form.message.errors }}
                     </div>
+                    <div class="editor-photos">
+                        <div class="editor-photos-heading">
+                            <span>Fotografii <small data-photo-count></small></span>
+                            <label class="photo-select" for="{{ form.photos.id_for_label }}">
+                                {{ form.photos }}<span>＋ Adaugă</span>
+                            </label>
+                        </div>
+                        <p class="help-text" id="photo-help">Opțional · 10 imagini, maximum 5 MB fiecare · JPEG, PNG, WebP.</p>
+                        {{ form.photos.errors }}{{ form.remove_photos.errors }}
+                        <div class="editor-photo-strip">
+                            {% for card in form.photo_cards %}
+                            <label class="photo-choice" title="{{ card.attachment.original_name }}">
+                                <input type="checkbox" name="{{ form.remove_photos.html_name }}" value="{{ card.attachment.pk }}" {% if card.removed %}checked{% endif %} class="visually-hidden" aria-label="Elimină {{ card.attachment.original_name }} la salvare">
+                                <img src="{% url 'capsules:image' card.attachment.capsule_id card.attachment.pk %}" alt="{{ card.attachment.original_name }}" width="56" height="56">
+                                <span class="photo-remove-mark" aria-hidden="true">×</span><small>Elimină</small>
+                            </label>
+                            {% endfor %}
+                            <div class="new-photo-previews"></div>
+                        </div>
+                        <small class="photo-save-hint">Fotografiile se adaugă sau se elimină când salvezi capsula.</small>
+                    </div>
                 </fieldset>
 
                 <p class="help-text">
-                    {% if is_edit %}Salvează modificările, apoi alege „Fotografii” din colecție.<br>{% else %}După salvarea ciornei poți adăuga fotografii.<br>{% endif %}
                     Ora este interpretată în fusul
                     {{ user.timezone }}.
                     Descrierea rămâne vizibilă după sigilare.

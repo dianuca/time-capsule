@@ -85,7 +85,6 @@
                             Editează ciorna ↗
                         </a>
                         <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:seal' capsule.pk %}">Sigilează ✦</a>
-                        <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:photos' capsule.pk %}">Fotografii ↗</a>
                         {% elif capsule.first_opened_at %}
                         <a class="capsule-edit-link" data-capsule-popup href="{% url 'capsules:detail' capsule.pk %}">Citește scrisoarea ↗</a>
                         {% elif capsule.is_available %}

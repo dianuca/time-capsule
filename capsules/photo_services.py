@@ -98,6 +98,23 @@ def lock_draft(capsule):
         raise ValidationError("Fotografiile pot fi modificate doar cât timp capsula este o ciornă.")
 
 
+def _write_photos(capsule, photos, saved_names):
+    for photo in photos:
+        attachment = Attachment(
+            capsule=capsule, original_name=photo.original_name,
+            content_type=photo.content_type, width=photo.width, height=photo.height,
+            size=len(photo.data),
+        )
+        name = attachment_path(attachment, f"photo.{photo.extension}")
+        if not private_photo_storage.exists(name):
+            saved_names.append(name)
+        saved = private_photo_storage.save(name, ContentFile(photo.data))
+        if saved != name:
+            saved_names.append(saved)
+        attachment.file = saved
+        attachment.save(force_insert=True)
+
+
 def add_photos(capsule, photos):
     saved_names = []
     try:
@@ -105,20 +122,7 @@ def add_photos(capsule, photos):
             lock_draft(capsule)
             if capsule.attachments.count() + len(photos) > MAX_PHOTOS:
                 raise ValidationError("O capsulă poate avea cel mult 10 fotografii.")
-            for photo in photos:
-                attachment = Attachment(
-                    capsule=capsule, original_name=photo.original_name,
-                    content_type=photo.content_type, width=photo.width, height=photo.height,
-                    size=len(photo.data),
-                )
-                name = attachment_path(attachment, f"photo.{photo.extension}")
-                if not private_photo_storage.exists(name):
-                    saved_names.append(name)
-                saved = private_photo_storage.save(name, ContentFile(photo.data))
-                if saved != name:
-                    saved_names.append(saved)
-                attachment.file = saved
-                attachment.save(force_insert=True)
+            _write_photos(capsule, photos, saved_names)
     except Exception:
         for name in saved_names:
             schedule_file_deletion(name)
@@ -129,3 +133,34 @@ def remove_photo(attachment):
     with transaction.atomic():
         lock_draft(attachment.capsule)
         attachment.delete()
+
+
+def save_capsule_with_photos(capsule, values, photos=(), remove_ids=()):
+    """Commit the draft, additions and removals together; compensate file writes."""
+    from .services import DRAFT_FIELDS, update_draft
+
+    saved_names = []
+    try:
+        with transaction.atomic():
+            if values["opens_at"] <= timezone.now():
+                raise ValidationError("Alege o dată de deschidere din viitor.")
+            if capsule._state.adding:
+                for name in DRAFT_FIELDS:
+                    setattr(capsule, name, values[name])
+                capsule.save(force_insert=True)
+            else:
+                # This conditional UPDATE holds the same parent lock as uploads.
+                update_draft(capsule, values)
+            remove_ids = set(remove_ids)
+            removals = capsule.attachments.filter(pk__in=remove_ids)
+            if removals.count() != len(remove_ids):
+                raise ValidationError("Fotografiile au fost modificate între timp. Reîncarcă formularul.")
+            removals.delete()
+            if capsule.attachments.count() + len(photos) > MAX_PHOTOS:
+                raise ValidationError("O capsulă poate avea cel mult 10 fotografii.")
+            _write_photos(capsule, photos, saved_names)
+    except Exception:
+        for name in saved_names:
+            schedule_file_deletion(name)
+        raise
+    return capsule

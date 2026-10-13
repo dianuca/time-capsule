@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Capsule
+from .models import Attachment, Capsule
 from .photo_services import MAX_PHOTOS, validate_photo
 
 
@@ -11,7 +11,9 @@ class MultiplePhotoInput(forms.ClearableFileInput):
 class PhotoFilesField(forms.FileField):
     def clean(self, data, initial=None):
         if not data:
-            raise forms.ValidationError("Alege cel puțin o fotografie.")
+            if self.required:
+                raise forms.ValidationError("Alege cel puțin o fotografie.")
+            return []
         uploads = data if isinstance(data, (list, tuple)) else [data]
         if len(uploads) > MAX_PHOTOS:
             raise forms.ValidationError("Alege cel mult 10 fotografii.")
@@ -25,6 +27,13 @@ class PhotoUploadForm(forms.Form):
     )
 
 class CapsuleForm(forms.ModelForm):
+    photos = PhotoFilesField(
+        required=False, label="Fotografii",
+        widget=MultiplePhotoInput(attrs={"accept": "image/jpeg,image/png,image/webp", "data-photo-input": ""}),
+    )
+    remove_photos = forms.ModelMultipleChoiceField(
+        required=False, queryset=Attachment.objects.none(), widget=forms.CheckboxSelectMultiple,
+    )
     class Meta:
         model = Capsule
         fields = ("title", "description", "message", "opens_at", "theme")
@@ -61,7 +70,22 @@ class CapsuleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["theme"].required = False
+        self.fields["remove_photos"].queryset = self.instance.attachments.all() if not self.instance._state.adding else Attachment.objects.none()
 
     def clean_theme(self):
         return self.cleaned_data.get("theme") or self.instance.theme
+
+    @property
+    def photo_cards(self):
+        selected = {str(value) for value in (self["remove_photos"].value() or [])}
+        return [{"attachment": photo, "removed": str(photo.pk) in selected}
+                for photo in self.fields["remove_photos"].queryset]
+
+    def clean(self):
+        data = super().clean()
+        if "photos" in data and "remove_photos" in data:
+            existing = self.instance.attachments.count() if not self.instance._state.adding else 0
+            if existing - len(data["remove_photos"]) + len(data["photos"]) > MAX_PHOTOS:
+                raise forms.ValidationError("O capsulă poate avea cel mult 10 fotografii. Elimină una pentru a adăuga alta.")
+        return data
 
