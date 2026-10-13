@@ -1,0 +1,9 @@
+Bună, {{ username }}!
+
+Confirmă adresa de email pentru contul tău Time Capsule:
+
+{{ link }}
+
+Autentifică-te în contul {{ username }} și confirmă adresa pe pagina deschisă.
+Linkul este valabil o oră și poate fi folosit o singură dată.
+Dacă nu ai solicitat această verificare, ignoră mesajul. Adresa contului nu se schimbă fără confirmare.

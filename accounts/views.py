@@ -1,6 +1,7 @@
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect, render
-from .forms import AccountDeletionForm, ProfileForm, SignUpForm
+from .forms import AccountDeletionForm, EmailVerificationForm, ProfileForm, SignUpForm
+from .email_verification import confirmation_data, confirm_email, send_verification
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -13,6 +14,45 @@ from .services import delete_account, save_profile
 from django.http import FileResponse, Http404
 from django.views.decorators.http import require_safe
 import logging
+
+
+@login_required
+@never_cache
+@require_http_methods(["GET", "POST"])
+def email_settings(request):
+    form = EmailVerificationForm(request.POST if request.method == "POST" else None, user=request.user, initial={"email": request.user.email})
+    if request.method == "POST" and form.is_valid():
+        try:
+            send_verification(request.user, form.cleaned_data["email"], request)
+        except ValidationError as exc:
+            form.add_error(None, exc)
+        except Exception:
+            logging.getLogger(__name__).exception("Email verification delivery failed for user %s", request.user.pk)
+            form.add_error(None, "Emailul nu a putut fi trimis. Încearcă din nou mai târziu.")
+        else:
+            messages.success(request, "Linkul de confirmare a fost trimis. Verifică emailul; adresa contului se schimbă doar după confirmare.")
+            return redirect("accounts:profile")
+    return render(request, "accounts/email_settings.html", {"form": form})
+
+
+@login_required
+@never_cache
+@require_http_methods(["GET", "POST"])
+def email_confirm(request, token):
+    valid = bool(confirmation_data(request.user, token))
+    error = ""
+    if request.method == "POST":
+        try:
+            confirm_email(request.user, token)
+        except ValidationError as exc:
+            error = " ".join(exc.messages)
+            valid = False
+        else:
+            messages.success(request, "Adresa de email a fost confirmată.")
+            return redirect("accounts:profile")
+    response = render(request, "accounts/email_confirm.html", {"valid": valid, "error": error, "email": request.user.pending_email})
+    response["Referrer-Policy"] = "no-referrer"
+    return response
 
 
 @login_required
@@ -82,6 +122,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, "Contul tău este pregătit. Poți confirma adresa de email din Profil.")
             return redirect("capsules:home")
     else:
         form = SignUpForm()

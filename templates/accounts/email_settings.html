@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Adresa de email | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace"><div class="capsule-surface">
+    <span class="eyebrow">PĂSTRĂM LEGĂTURA</span><h1 id="capsule-heading">Adresa ta de email</h1>
+    <p>Îți trimitem un link de confirmare. Adresa actuală rămâne activă până când confirmi noua adresă.</p>
+    <form method="post" action="{% url 'accounts:email_settings' %}">{% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}<div class="form-field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+        <div class="editor-actions"><a class="button button-quiet" href="{% url 'accounts:profile' %}">Înapoi la profil</a><button class="button button-primary" type="submit">Trimite linkul de confirmare</button></div>
+    </form>
+</div></section>
+{% endblock %}

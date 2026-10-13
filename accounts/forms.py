@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.utils.translation import override
-from .models import User
+from .models import User, VerifiedEmail
 from zoneinfo import available_timezones
 from capsules.photo_services import validate_photo
 
@@ -44,6 +44,27 @@ class AccountDeletionForm(forms.Form):
         return password
 
 
+class EmailVerificationForm(forms.Form):
+    email = forms.EmailField(label="Adresa de email", widget=forms.EmailInput(attrs={"autocomplete": "email"}))
+    password = forms.CharField(label="Parola curentă", strip=False, widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}))
+
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().casefold()
+        if VerifiedEmail.objects.filter(email=email).exclude(user=self.user).exists():
+            raise forms.ValidationError("Adresa nu este disponibilă. Folosește o altă adresă.")
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("Parola nu este corectă.")
+        return password
+
+
 class ProfileForm(forms.ModelForm):
     avatar_upload = forms.FileField(
         required=False, label="Schimbă fotografia",
@@ -76,6 +97,12 @@ class ProfileForm(forms.ModelForm):
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().casefold()
+        if VerifiedEmail.objects.filter(email=email).exists():
+            raise forms.ValidationError("Adresa nu este disponibilă. Folosește o altă adresă.")
+        return email
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
