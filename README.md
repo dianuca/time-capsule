@@ -215,6 +215,8 @@ Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea,
 
 ### 7. Cont, parole și notificări
 
+Avatarul profilului este mărit la 210px și centrat imediat sub titlul „Profilul tău”; descrierea apare dedesubt, după controalele fotografiei. Coloana introductivă este centrată și pe mobil.
+
 Resetarea parolei prin email este amânată la cererea utilizatorului; nu o începe automat ca următor pas.
 
 - [x] Setări profil: prenume/nume, fus orar IANA validat, preferință email și fotografie cu avatar implicit.

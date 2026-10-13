@@ -1239,13 +1239,14 @@ body:has(.capsule-dialog[open]) { overflow: hidden; }
 .letter-written { margin: 0 0 20px; }
 .reflection-summary { margin-top: 24px; padding: 20px; border: 1px solid var(--envelope-edge, #c9b5df); border-radius: 16px; background: linear-gradient(135deg, var(--card-tint, #f2ecfa), #fffdf980); }
 .profile-settings { display: grid; grid-template-columns: minmax(180px, .65fr) minmax(0, 1.35fr); gap: 48px; max-width: 1000px; margin-block: 20px; }
-.profile-intro p { color: var(--muted); font-size: 14px; }
-.profile-avatar { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 28px; }
-.profile-avatar-circle { width: 148px; height: 148px; padding: 4px; border: 1px solid #ded0eb; border-radius: 50%; background: #fffdf8; box-shadow: 0 8px 28px #7455a512; }
-.profile-avatar-circle img, .profile-avatar-circle > span { display: block; width: 138px; height: 138px; border-radius: 50%; object-fit: cover; }
+.profile-intro { text-align: center; }
+.profile-intro p { color: var(--muted); font-size: 14px; margin-top: 20px; }
+.profile-avatar { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+.profile-avatar-circle { width: min(210px, 100%); aspect-ratio: 1; padding: 4px; border: 1px solid #ded0eb; border-radius: 50%; background: #fffdf8; box-shadow: 0 8px 28px #7455a512; }
+.profile-avatar-circle img, .profile-avatar-circle > span { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .profile-avatar-circle > span { display: grid; place-items: center; color: #9679b4; background: radial-gradient(circle at 30% 20%, #faf5ff, #e6d8f3); }
 .profile-avatar-circle [hidden] { display: none; }
-.profile-avatar svg { width: 90px; height: 90px; }
+.profile-avatar svg { width: 65%; height: 65%; }
 .avatar-upload-control { position: relative; margin-top: 6px; padding: 7px 13px; border: 1px solid var(--border); border-radius: 999px; background: #ffffff80; color: var(--accent-dark); font-size: 12px; cursor: pointer; }
 .avatar-upload-control input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .avatar-upload-control:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
