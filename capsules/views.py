@@ -4,17 +4,78 @@ from .models import Capsule
 from zoneinfo import ZoneInfo
 from django.shortcuts import redirect
 from django.utils import timezone
-from .forms import CapsuleForm
+from .forms import CapsuleForm, PhotoUploadForm
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.db.models import Case, When, Value, CharField, Count, Q
+from django.db import transaction
 from math import ceil
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ValidationError
 from .services import DRAFT_FIELDS, seal_capsule, update_draft
+from .models import Attachment
+from .photo_services import add_photos, remove_photo
+from django.http import FileResponse, Http404
+from django.views.decorators.http import require_POST, require_safe
+import logging
+
+
+@login_required
+@never_cache
+@require_http_methods(["GET", "POST"])
+def capsule_photos(request, pk):
+    capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
+    if not capsule.is_draft:
+        return HttpResponseForbidden("Fotografiile pot fi modificate doar în ciornă.")
+    form = PhotoUploadForm(request.POST, request.FILES) if request.method == "POST" else PhotoUploadForm()
+    if request.method == "POST" and form.is_valid():
+        try:
+            add_photos(capsule, form.cleaned_data["photos"])
+            return redirect("capsules:photos", pk=pk)
+        except ValidationError as exc:
+            form.add_error("photos", exc)
+        except OSError:
+            logging.getLogger(__name__).exception("Private photo upload failed.")
+            form.add_error(None, "Fotografiile nu au putut fi salvate. Încearcă din nou.")
+    return render(request, "capsules/capsule_photos.html", {
+        "capsule": capsule, "form": form, "attachments": capsule.attachments.all(),
+    })
+
+
+@login_required
+@never_cache
+@require_POST
+def attachment_delete(request, pk, attachment_pk):
+    attachment = get_object_or_404(
+        Attachment.objects.select_related("capsule"),
+        pk=attachment_pk, capsule_id=pk, capsule__owner=request.user,
+    )
+    try:
+        remove_photo(attachment)
+    except ValidationError as exc:
+        return HttpResponseForbidden(" ".join(exc.messages))
+    return redirect("capsules:photos", pk=pk)
+
+
+@login_required
+@never_cache
+@require_safe
+def attachment_image(request, pk, attachment_pk):
+    attachment = get_object_or_404(
+        Attachment.objects.select_related("capsule"),
+        pk=attachment_pk, capsule_id=pk, capsule__owner=request.user,
+    )
+    capsule = attachment.capsule
+    if not (capsule.is_draft or (capsule.first_opened_at is not None and capsule.opens_at <= timezone.now())):
+        return HttpResponseForbidden("Fotografia nu este disponibilă înainte de deschiderea capsulei.")
+    try:
+        file = attachment.file.open("rb")
+    except FileNotFoundError as exc:
+        raise Http404("Fotografia nu a fost găsită.") from exc
+    return FileResponse(file, content_type=attachment.content_type, filename=f"photo-{attachment.pk}.{attachment.file.name.rsplit('.', 1)[-1]}")
 
 
 @login_required
@@ -60,6 +121,7 @@ def capsule_detail(request, pk):
             "can_open": not capsule.is_draft and capsule.opens_at <= now,
             "animate_open": can_read and not capsule.is_draft and request.GET.get("opened") == "1",
             "animate_seal": not capsule.is_draft and request.GET.get("sealed") == "1",
+            "attachments": capsule.attachments.all() if can_read else [],
         })
 
 
@@ -68,7 +130,10 @@ def capsule_detail(request, pk):
 def capsule_delete(request, pk):
     capsule = get_object_or_404(Capsule, pk=pk, owner=request.user)
     if request.method == "POST":
-        capsule.delete()
+        with transaction.atomic():
+            # Serialize against uploads before collecting cascading attachments.
+            Capsule.objects.filter(pk=pk, owner=request.user).update(updated_at=timezone.now())
+            capsule.delete()
         messages.success(request, "Capsula a fost ștearsă.")
         return redirect("capsules:list")
     return render(request, "capsules/capsule_confirm_delete.html", {"capsule": capsule})

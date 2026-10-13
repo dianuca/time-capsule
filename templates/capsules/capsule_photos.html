@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Fotografiile capsulei | Time Capsule{% endblock %}
+{% block content %}
+<section class="capsule-workspace">
+    <div class="capsule-surface capsule-photo-manager theme-{{ capsule.theme }}">
+        <span class="eyebrow">AMINTIRI ÎN IMAGINI</span>
+        <h1 id="capsule-heading">Fotografiile tale</h1>
+        <p>„{{ capsule.title }}” · {{ attachments|length }}/10 fotografii. Le poți schimba până la sigilare.</p>
+        <form method="post" enctype="multipart/form-data" action="{% url 'capsules:photos' capsule.pk %}" class="photo-upload-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-field">{{ form.photos.label_tag }}{{ form.photos }}{{ form.photos.errors }}</div>
+            <p class="help-text">JPEG, PNG sau WebP · maximum 5 MB/imagine, 25 megapixeli, 12000 px/latură. Fără animații.</p>
+            <button class="button button-primary" type="submit">Păstrează fotografiile</button>
+        </form>
+        <div class="photo-gallery">
+            {% for attachment in attachments %}
+            <figure>
+                <img src="{% url 'capsules:image' capsule.pk attachment.pk %}" alt="{{ attachment.original_name }}" width="{{ attachment.width }}" height="{{ attachment.height }}" loading="lazy">
+                <figcaption>{{ attachment.original_name }}</figcaption>
+                <form method="post" action="{% url 'capsules:photo-delete' capsule.pk attachment.pk %}">
+                    {% csrf_token %}
+                    <button class="capsule-delete-link" type="submit" aria-label="Elimină {{ attachment.original_name }}">Elimină</button>
+                </form>
+            </figure>
+            {% empty %}<p class="help-text">Adaugă o fotografie care spune o parte din povestea ta.</p>{% endfor %}
+        </div>
+        <div class="editor-actions"><a class="button button-quiet" data-popup-cancel href="{% url 'capsules:list' %}">Înapoi la colecție</a></div>
+    </div>
+</section>
+{% endblock %}

@@ -47,6 +47,7 @@
                 </fieldset>
 
                 <p class="help-text">
+                    {% if is_edit %}Salvează modificările, apoi alege „Fotografii” din colecție.<br>{% else %}După salvarea ciornei poți adăuga fotografii.<br>{% endif %}
                     Ora este interpretată în fusul
                     {{ user.timezone }}.
                     Descrierea rămâne vizibilă după sigilare.

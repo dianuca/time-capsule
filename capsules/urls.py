@@ -10,6 +10,9 @@ urlpatterns = [
     path("capsules/<uuid:pk>/delete/", views.capsule_delete, name="delete"),
     path("capsules/<uuid:pk>/", views.capsule_detail, name="detail"),
     path("capsules/<uuid:pk>/seal/", views.capsule_seal, name="seal"),
+    path("capsules/<uuid:pk>/photos/", views.capsule_photos, name="photos"),
+    path("capsules/<uuid:pk>/photos/<uuid:attachment_pk>/", views.attachment_image, name="image"),
+    path("capsules/<uuid:pk>/photos/<uuid:attachment_pk>/delete/", views.attachment_delete, name="photo-delete"),
     path(
     "capsules/<uuid:pk>/edit/",
     views.capsule_edit,

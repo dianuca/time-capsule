@@ -12,6 +12,13 @@
             <article class="letter-paper">
                 <p class="letter-written">Scrisă pe {{ capsule.created_at|date:"d.m.Y" }}{% if capsule.is_draft %} · Ciornă{% endif %}</p>
                 <div class="letter-message">{{ capsule.message|linebreaksbr }}</div>
+                {% if attachments %}
+                <div class="photo-gallery reader-gallery">
+                    {% for attachment in attachments %}
+                    <figure><img src="{% url 'capsules:image' capsule.pk attachment.pk %}" alt="{{ attachment.original_name }}" width="{{ attachment.width }}" height="{{ attachment.height }}" loading="lazy"></figure>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </article>
         {% elif can_open %}
             <div class="keepsake-envelope" aria-hidden="true"><span class="envelope-seal">✦</span></div>

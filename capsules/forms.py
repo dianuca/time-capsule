@@ -1,6 +1,28 @@
 from django import forms
 from django.utils import timezone
 from .models import Capsule
+from .photo_services import MAX_PHOTOS, validate_photo
+
+
+class MultiplePhotoInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class PhotoFilesField(forms.FileField):
+    def clean(self, data, initial=None):
+        if not data:
+            raise forms.ValidationError("Alege cel puțin o fotografie.")
+        uploads = data if isinstance(data, (list, tuple)) else [data]
+        if len(uploads) > MAX_PHOTOS:
+            raise forms.ValidationError("Alege cel mult 10 fotografii.")
+        return [validate_photo(super(PhotoFilesField, self).clean(upload, initial)) for upload in uploads]
+
+
+class PhotoUploadForm(forms.Form):
+    photos = PhotoFilesField(
+        label="Adaugă fotografii",
+        widget=MultiplePhotoInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
+    )
 
 class CapsuleForm(forms.ModelForm):
     class Meta:

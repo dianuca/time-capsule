@@ -119,6 +119,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static'] 
 
+# Never expose this directory via static/media URL routing.
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 

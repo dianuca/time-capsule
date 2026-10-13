@@ -6,7 +6,7 @@ Repository: https://github.com/dianuca/time-capsule
 
 ## Scop și sursa stadiului
 
-Acest document este planul de produs și checklist-ul de implementare pentru Codex în VS Code. Stadiul de mai jos reflectă funcționalitățile confirmate în conversație până la 13 octombrie 2026, nu un audit al repository-ului. Codex trebuie să verifice codul, branch-ul și testele înainte de lucru și să actualizeze checklist-ul după verificare. Nu reimplementa funcționalități care există deja.
+Acest document este planul de produs și checklist-ul de implementare pentru Codex în VS Code. Stadiul curent a fost verificat în cod și prin teste la 13 octombrie 2026; secțiunile istorice păstrează rezultatele etapelor anterioare. Codex trebuie să verifice codul, branch-ul și testele înainte de lucru și să actualizeze checklist-ul după verificare. Nu reimplementa funcționalități care există deja.
 
 Versiunile sunt cumulative. Prioritatea este finalizarea V1; V2-V4 sunt extensii ulterioare.
 
@@ -89,9 +89,9 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Audit local pe branch-ul `dev`, la 13 octombrie 2026: cele 32 de teste existente au trecut înainte de modificări; după implementarea ștergerii trec 39 de teste (7 noi). `make check`, testele dedicate ștergerii și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări.
+Ultima verificare locală, la 13 octombrie 2026: 85 de teste trec, inclusiv 19 teste noi pentru fotografii. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
-Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea și deschiderea sunt implementate. Atașamentele, reflecțiile și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
+Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, temele, sigilarea, deschiderea și fotografiile private sunt implementate. Reflecțiile și setările/notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
 ## Reguli de produs și acces
 
@@ -110,7 +110,7 @@ Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea,
 
 ## V1 - MVP personal
 
-### 1. Ștergerea capsulelor - implementată (fără atașamente)
+### 1. Ștergerea capsulelor - implementată
 
 Branch sugerat: `feature/capsule-delete`.
 
@@ -120,7 +120,7 @@ Branch sugerat: `feature/capsule-delete`.
 - [x] Link „Șterge” pe card, disponibil și pentru capsule sigilate/deschise.
 - [x] Acțiune „Anulează” în confirmare.
 - [x] Teste: anonim respins, alt proprietar 404 pe GET/POST, GET nu șterge, POST șterge doar obiectul vizat.
-- [ ] Când există atașamente, șterge și fișierele din storage, cu tratarea erorilor. Amânat până la etapa 4: atașamentele nu există încă.
+- [x] Când există atașamente, șterge și fișierele din storage după commit, cu reîncercare persistentă pentru erori.
 
 Testele verifică suplimentar CSRF, accesul staff la capsule străine, metodele HTTP nepermise, ștergerea în toate stările și cererile repetate.
 
@@ -154,19 +154,29 @@ Branch sugerat: `feature/capsule-open`.
 
 Validare: 8 teste noi pentru deschidere; suita totală are 55 de teste. Răspunsurile detaliilor folosesc `Cache-Control: no-store`; mesajul este escap-at la afișare. Verificarea animației și a modalului în browser rămâne manuală: deschide o capsulă demo disponibilă, confirmă, închide și recitește; verifică și o capsulă blocată, numărătoarea inversă și preferința de mișcare redusă.
 
-### 4. Fotografii private
+### 4. Fotografii private - implementate
 
 Branch sugerat: `feature/capsule-photos`.
 
-- [ ] Model Attachment și upload în ciornă; JPEG, PNG și WebP.
-- [ ] Limite propuse: 10 imagini/capsulă, 5 MB/imagine; validează formatul real și dimensiunile imaginii.
-- [ ] Permite eliminarea imaginilor înainte de sigilare.
-- [ ] Stocare privată; acces prin endpoint autorizat sau URL semnat cu expirare scurtă.
-- [ ] Galerie după deschidere și previzualizare în ciornă.
-- [ ] Upload/delete respectă sigilarea inclusiv în concurență.
-- [ ] Teste pentru fișiere invalide, limite, acces străin, acces înainte de termen și curățarea fișierelor.
+- [x] Model Attachment și upload în ciornă; JPEG, PNG și WebP.
+- [x] Limite: 10 imagini/capsulă, 5 MB/imagine; validează formatul real și dimensiunile imaginii (25 megapixeli, maximum 12000 px pe latură).
+- [x] Permite eliminarea imaginilor înainte de sigilare, numai prin POST cu CSRF.
+- [x] Stocare privată; acces prin endpoint autorizat, fără URL public și cu `Cache-Control: no-store`.
+- [x] Galerie după prima deschidere și previzualizare în ciornă.
+- [x] Upload/delete respectă sigilarea inclusiv în concurență, prin UPDATE condiționat al capsulei în tranzacția atașamentelor; limita totală este verificată după obținerea blocării pentru scriere.
+- [x] Teste pentru fișiere invalide, limite, acces străin, acces înainte de termen și curățarea fișierelor, inclusiv rollback, erori storage și sigilare în timpul validării upload-ului.
 
-### 5. Reflecția după deschidere
+Instalare: `python -m pip install -r requirements.txt`, apoi `python manage.py migrate`. Pillow 12.3.0 este folosit pentru decodare, verificare și resalvarea pixelilor; metadatele EXIF/GPS și datele adăugate după imagine sunt eliminate. Imaginile animate sunt respinse. Formatul este determinat din conținut, nu din extensie sau MIME-ul trimis de browser. Fișierul `requirements.txt` este acum UTF-8 pentru editare reproductibilă.
+
+În colecție, alege „Fotografii” pe o ciornă salvată. Modalul permite selectarea mai multor imagini și eliminarea celor existente. Formularul principal rămâne compact; fotografiile se gestionează separat după salvarea mesajului. După sigilare, endpoint-ul imaginilor refuză accesul până la prima deschidere, chiar dacă termenul a trecut. HTML-ul capsulelor blocate nu include imaginile sau URL-urile lor.
+
+Storage local: `PRIVATE_MEDIA_ROOT` din `config/settings.py` indică `private_media/`, exclus din Git. Nu configura servirea publică a acestui director în Django sau în proxy. Pentru producție trebuie configurat un volum privat persistent și inclus în backup, împreună cu DB; setează în proxy limite de upload potrivite pentru maximum 10 fișiere de 5 MB. Configurarea producției rămâne în etapa 8.
+
+La ștergerea unei imagini, capsule sau a unui cont, se creează în aceeași tranzacție un job `PendingFileDeletion`; fișierul este eliminat numai după commit. Erorile sunt înregistrate și păstrate pentru reîncercare: `python manage.py cleanup_private_files`. Comanda poate fi rulată periodic și după un incident storage; la oprirea procesului înainte de callback, jobul rămâne în DB. Upload-urile parțial eșuate anulează înregistrările și programează curățarea fișierelor deja scrise. Un rollback al ștergerii păstrează fișierele.
+
+Validare locală pe SQLite: cele 19 teste noi și suita totală de 85 de teste trec. PostgreSQL și verificarea vizuală în browser nu au fost disponibile. Manual pe desktop/mobil: încarcă JPEG/PNG/WebP într-o ciornă, verifică previzualizarea, elimină o imagine, sigilează capsula și verifică blocarea imaginilor; la termen deschide capsula și verifică galeria. Verifică și un fișier invalid, limita de imagini și o încărcare fără fișiere.
+
+### 5. Reflecția după deschidere - următoarea prioritate
 
 - [ ] Model Reflection: o reflecție personală per capsulă în V1.
 - [ ] Creare/editare numai după prima deschidere, de către proprietar.
@@ -281,7 +291,7 @@ Migrarea `0002_capsule_theme` adaugă tema cu valoarea implicită lila fără pi
 
 Rulează `python manage.py seed_demo` pentru utilizatorul existent `dianaciodolan`, sau `python manage.py seed_demo --username NUME` pentru alt cont existent. Comanda nu creează conturi și nu schimbă parolele. Adaugă 24 de capsule (6 în fiecare stare), cu identificatori stabili; rerularea nu dublează capsulele și nu suprascrie datele existente sau editările manuale. O capsulă demo ștearsă va fi recreată la rerulare. Datele sunt relative la prima generare; rerularea nu reprogramează capsulele existente.
 
-Scenarii: titlu lung, descriere lungă sau absentă, mesaj gol în ciornă, scrisoare lungă, mesaj scurt, diacritice/emoji, text HTML literal, ciornă expirată, termen peste 15 minute, mâine, peste o săptămână, un an și zece ani, capsule disponibile și deschise de mult timp. Datele de creare sunt variate pentru verificarea ordonării. Fotografiile, reflecțiile, sigilarea și lectura prin fluxuri dedicate nu sunt încă implementate; seed-ul pregătește stările modelelor existente, fără să adauge acele funcționalități.
+Scenarii: titlu lung, descriere lungă sau absentă, mesaj gol în ciornă, scrisoare lungă, mesaj scurt, diacritice/emoji, text HTML literal, ciornă expirată, termen peste 15 minute, mâine, peste o săptămână, un an și zece ani, capsule disponibile și deschise de mult timp. Datele de creare sunt variate pentru verificarea ordonării. Seed-ul nu generează fotografii sau reflecții. Sigilarea, lectura și fotografiile au acum fluxuri dedicate; reflecțiile rămân neimplementate.
 
 Colecția a fost rafinată pe `feature/collection-ui`: carduri cu înălțimi uniforme pe rând și culori după stare, ștergere în meniul „⋯”, filtre cu numărători, dată relativă plus data exactă în fusul utilizatorului și un mesaj introductiv personal în formular. Notificările se închid după 8 secunde sau manual; temporizatorul se oprește la hover/focus. Validare: 43 de teste Django, verificarea Django și sintaxa JavaScript. Verificarea vizuală/interactivă în browser rămâne manuală.
 
@@ -313,7 +323,7 @@ Verificări UI: `node --check static/js/capsules.js`, `make check` și cele 39 d
 9. Pentru UI, verifică pagina pe desktop și mobil dacă ai acces la browser; altfel oferă pași de verificare și declară limita.
 10. Marchează o funcționalitate cu [x] numai după implementare și validare; notează separat limitările sau configurarea externă rămasă.
 11. Rezumă ce s-a schimbat, fișierele relevante, testele rulate și rezultatele reale. Nu pretinde rulări care nu au avut loc.
-12. Nu face commit, push, merge sau deploy din proprie inițiativă; pregătește schimbările și comenzile, apoi execută aceste acțiuni când utilizatorul le cere.
+12. Conform fluxului cerut în conversație: după finalizarea și verificarea unei funcționalități, fă commit pe branch-ul dedicat și merge local în `dev`; creează următorul branch din `dev`. Push și deploy numai la cerere explicită.
 
 ## Definition of done pentru fiecare feature
 

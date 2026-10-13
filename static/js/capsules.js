@@ -131,7 +131,7 @@
             if (response.redirected) {
                 // Render the redirected page directly so Django's success message is preserved.
                 const page = new DOMParser().parseFromString(await response.text(), 'text/html');
-                if (page.querySelector('.capsule-reader')) {
+                if (page.querySelector('.capsule-reader, .capsule-photo-manager')) {
                     fill(page.documentElement.outerHTML);
                     content.querySelector('h1')?.setAttribute('tabindex', '-1');
                     content.querySelector('h1')?.focus();
