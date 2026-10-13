@@ -17,7 +17,7 @@
         </a>
 
         <nav class="header-nav" aria-label="Navigație principală">
-            <a class="nav-link" href="{% url 'capsules:home' %}#how-it-works"> Cum funcționează</a>
+            <a class="nav-link" href="{% url 'capsules:home' %}" {% if request.resolver_match.view_name == 'capsules:home' %}aria-current="page"{% endif %}>Acasă</a>
 
             {% if user.is_authenticated %}
             <a class="nav-link" href="{% url 'capsules:list' %}">Capsulele mele</a>
