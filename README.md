@@ -262,6 +262,8 @@ Flux dorit (planificat, neimplementat): creatorul introduce emailul destinatarul
 
 ### Personalitatea aplicației - implementată
 
+Căutarea este în dreapta filtrelor pe desktop, cu buton discret de tip lupă și etichetă accesibilă. Sub 1000px se așază sub filtre pentru a evita înghesuirea.
+
 Implementat pe `feature/capsule-personality`, după popularea cu date demo:
 
 - [x] Previzualizare discretă de plic pe card, adaptată stării capsulei.
