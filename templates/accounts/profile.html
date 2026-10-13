@@ -35,7 +35,8 @@
             {{ form.email_notifications_enabled.errors }}
             <p class="profile-account-detail">Cont: {{ user.username }}</p>
         <div class="profile-email-status">
-            <span><strong>{{ user.email|default:"Adaugă o adresă de email" }}</strong><span class="profile-email-label">{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span></span>
+            <strong class="profile-email-address">{{ user.email|default:"Adaugă o adresă de email" }}</strong>
+            <span class="profile-email-label">{% if user.email_is_verified %}Email confirmat{% else %}Email neconfirmat{% endif %}</span>
             <a {% if not user.email_is_verified %}class="button button-danger profile-email-confirm"{% endif %} data-capsule-popup href="{% url 'accounts:email_settings' %}" aria-label="{% if user.email_is_verified %}Schimbă adresa de email{% else %}Confirmă adresa de email{% endif %}">{% if user.email_is_verified %}Schimbă{% else %}Confirmă emailul{% endif %}</a>
             {% if user.pending_email %}<small>Confirmare în așteptare: {{ user.pending_email }}</small>{% endif %}
         </div>
