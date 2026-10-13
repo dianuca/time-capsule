@@ -7,9 +7,23 @@
         <span class="eyebrow">SPAȚIUL TĂU PERSONAL</span>
         <h1 id="profile-heading">Profilul tău</h1>
         <p>Câteva detalii care fac acest loc al tău.</p>
+        <div class="profile-avatar">
+            <div class="profile-avatar-circle">
+                <img {% if user.avatar %}src="{% url 'accounts:avatar' %}" data-saved-avatar="{% url 'accounts:avatar' %}"{% else %}hidden{% endif %} alt="Fotografia ta de profil" width="140" height="140" data-avatar-image>
+                <span role="img" aria-label="Avatar implicit" data-avatar-default {% if user.avatar %}hidden{% endif %}>
+                    <svg viewBox="0 0 80 80" fill="none" aria-hidden="true"><circle cx="40" cy="29" r="12" fill="currentColor" opacity=".7"/><path d="M18 64c0-13 10-21 22-21s22 8 22 21" fill="currentColor" opacity=".7"/><path d="m62 15 2-5 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="currentColor" opacity=".45"/></svg>
+                </span>
+            </div>
+            <label class="avatar-upload-control" for="{{ form.avatar_upload.id_for_label }}">{{ form.avatar_upload }}<span>Schimbă fotografia</span></label>
+            <small>JPEG, PNG sau WebP · maximum 5 MB</small>
+            {{ form.avatar_upload.errors }}
+            {% if user.avatar %}<label class="avatar-remove-control">{{ form.remove_avatar }}{{ form.remove_avatar.label }}</label>{% endif %}
+            {{ form.remove_avatar.errors }}
+            <button type="button" class="avatar-reset-selection" data-avatar-reset hidden>Renunță la fotografia selectată</button>
+        </div>
         </div>
         <div class="profile-details">
-        <form method="post" action="{% url 'accounts:profile' %}">
+        <form id="profile-form" method="post" enctype="multipart/form-data" action="{% url 'accounts:profile' %}">
             {% csrf_token %}<input type="hidden" name="next" value="{{ next_url }}">
             {{ form.non_field_errors }}
             <div class="profile-name-fields">

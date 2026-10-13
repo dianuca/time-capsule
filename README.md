@@ -89,7 +89,7 @@ Nu publica `.env`, `.venv`, `db.sqlite3`, fișiere încărcate sau credențiale.
 - [x] Editarea ciornelor proprii; acces 404 pentru alt proprietar, 403 pentru capsulă sigilată.
 - [x] Makefile și teste pentru homepage, autentificare, listare, creare și editare.
 
-Ultima verificare locală, la 13 octombrie 2026: 138 de teste Django și cele 14 teste JavaScript pentru galerie și căutare/paginare trec. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
+Ultima verificare locală, la 13 octombrie 2026: 148 de teste Django și 17 teste JavaScript trec, inclusiv 10 teste Django și 3 JavaScript pentru avatar. Profilul este o pagină dedicată, conform preferinței utilizatorului. `make check`, testele dedicate și `make test`, cu `PYTHON=.venv/Scripts/python.exe`, trec. `makemigrations --check --dry-run` nu detectează schimbări neacoperite de migrări. Numerele din secțiunile istorice de mai jos descriu verificările de la implementarea fiecărei etape.
 
 Crearea, listarea privată, editarea ciornelor, filtrele după stare, căutarea, paginarea, temele, sigilarea, deschiderea, fotografiile private, reflecțiile, setările profilului și ștergerea contului sunt implementate. Resetarea parolei, verificarea emailului și notificările V1 rămân neimplementate. Editarea și sigilarea folosesc scrieri condiționate atomice; upload-ul și eliminarea fotografiilor serializează scrierile prin rândul capsulei. Admin afișează câmpurile capsulelor sigilate doar pentru lectură și respinge salvările întârziate.
 
@@ -217,7 +217,7 @@ Cu JavaScript, navigarea actualizează doar rezultatele, filtrele și paginarea,
 
 Resetarea parolei prin email este amânată la cererea utilizatorului; nu o începe automat ca următor pas.
 
-- [x] Setări profil: prenume/nume, fus orar IANA validat și preferință email.
+- [x] Setări profil: prenume/nume, fus orar IANA validat, preferință email și fotografie cu avatar implicit.
 - [ ] Resetare parolă prin email și template-uri coerente vizual.
 - [x] Ștergere cont cu confirmare, verificarea parolei și eliminarea datelor/fișierelor asociate.
 - [ ] Definește și implementează verificarea adresei de email înainte de notificări; tratează schimbarea adresei și eventualele duplicate fără pierderea conturilor existente.
@@ -228,7 +228,13 @@ Resetarea parolei prin email este amânată la cererea utilizatorului; nu o înc
 
 Profilul se deschide din linkul cu numele utilizatorului și „Profil”, în header, ca pagină dedicată la `/accounts/profile/`, nu în modal. Layout-ul are introducerea în stânga și setările în dreapta pe desktop, respectiv o singură coloană pe mobil. Salvarea revine implicit la profil, cu mesaj de succes și numele actualizat în header; „Înapoi la capsule” revine la colecție. GET afișează valorile existente; numai POST cu CSRF modifică datele. Parametrul opțional de revenire acceptă numai URL-uri locale sau ale aceluiași host, validate pe server. Confirmarea ștergerii contului rămâne în modal, iar anularea îl închide fără să deschidă profilul într-un alt modal.
 
-Fusurile orare provin din `zoneinfo.available_timezones()`; valorile necunoscute sunt respinse. Schimbarea fusului modifică doar afișarea și interpretarea intrărilor viitoare, fără a muta momentele capsulelor deja stocate în UTC. Testele verifică inclusiv orele ambigue/inexistente la schimbarea orei. Preferința email este salvată, dar serviciul de notificări nu este încă implementat. Emailul, username-ul, parola și permisiunile nu pot fi modificate prin acest formular; sunt salvate explicit doar cele patru câmpuri de profil.
+Fusurile orare provin din `zoneinfo.available_timezones()`; valorile necunoscute sunt respinse. Schimbarea fusului modifică doar afișarea și interpretarea intrărilor viitoare, fără a muta momentele capsulelor deja stocate în UTC. Testele verifică inclusiv orele ambigue/inexistente la schimbarea orei. Preferința email este salvată, dar serviciul de notificări nu este încă implementat. Emailul, username-ul, parola și permisiunile nu pot fi modificate prin acest formular; cele patru câmpuri de profil și avatarul validat se salvează explicit, în aceeași tranzacție.
+
+Sub titlul „Profilul tău” apare un avatar implicit SVG, crem-lila. Fotografia poate fi selectată și previzualizată local, cu renunțare înainte de salvare; schimbarea persistă la „Salvează preferințele”. Opțiunea „Revino la avatarul implicit” elimină fotografia la salvare și poate fi debifată înainte. Sunt acceptate JPEG/PNG/WebP de maximum 5 MB, cu validarea formatului și dimensiunilor reutilizată de la fotografii; metadatele sunt eliminate, iar imaginea este redusă proporțional la maximum 512×512 px și stocată ca PNG. Avatarul rotund afișează fotografia centrată.
+
+Migrarea `accounts.0002_user_avatar` adaugă un câmp opțional, astfel încât utilizatorii existenți primesc avatarul implicit fără pierderea datelor. Fotografia se stochează în `private_media/avatars/` și este accesibilă doar utilizatorului autentificat prin `/accounts/avatar/`, fără URL public și cu `no-store`. Înlocuirea, eliminarea și ștergerea contului programează curățarea fișierului vechi după commit; erorile folosesc aceeași coadă `PendingFileDeletion` și comanda `cleanup_private_files`. O eroare la salvare anulează și modificările profilului, păstrând fotografia veche.
+
+Validarea avatarului: 10 teste Django pentru format, proporții, acces, înlocuire, eliminare, rollback, CSRF și curățare; 3 teste JavaScript pentru previzualizare și anulare, cu DOM simulat. Total: 148 teste Django și 17 JavaScript trec. Migrarea este aplicată local. Aspectul rămâne de verificat manual pe desktop/mobil: avatar implicit, alegerea unei fotografii, anularea selecției, salvare, revenirea la avatarul implicit și o imagine invalidă.
 
 Validare actualizată: 13 teste pentru profil, inclusiv navigarea ca pagină și păstrarea confirmării ștergerii în modal. Total: 138 de teste Django și 14 teste JavaScript trec; nu sunt necesare migrări. Verificarea vizuală rămâne manuală: deschide „Profil”, schimbă numele, fusul orar și preferința, salvează și verifică revenirea la profil și header-ul. Verifică „Înapoi la capsule”, o eroare de validare, layout-ul mobil și anularea modalului de ștergere.
 

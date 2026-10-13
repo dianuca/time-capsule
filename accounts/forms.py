@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
 from zoneinfo import available_timezones
+from capsules.photo_services import validate_photo
 
 
 class AccountDeletionForm(forms.Form):
@@ -27,6 +28,11 @@ class AccountDeletionForm(forms.Form):
 
 
 class ProfileForm(forms.ModelForm):
+    avatar_upload = forms.FileField(
+        required=False, label="Schimbă fotografia",
+        widget=forms.FileInput(attrs={"accept": "image/jpeg,image/png,image/webp", "form": "profile-form"}),
+    )
+    remove_avatar = forms.BooleanField(required=False, label="Revino la avatarul implicit", widget=forms.CheckboxInput(attrs={"form": "profile-form"}))
     timezone = forms.ChoiceField(
         label="Fus orar", choices=[(name, name.replace("_", " ")) for name in sorted(available_timezones())],
         help_text="Datele capsulelor sunt afișate și introduse în acest fus orar.",
@@ -40,6 +46,16 @@ class ProfileForm(forms.ModelForm):
             "first_name": forms.TextInput(attrs={"autocomplete": "given-name"}),
             "last_name": forms.TextInput(attrs={"autocomplete": "family-name"}),
         }
+
+    def clean_avatar_upload(self):
+        upload = self.cleaned_data.get("avatar_upload")
+        return validate_photo(upload) if upload else None
+
+    def clean(self):
+        data = super().clean()
+        if data.get("avatar_upload") and data.get("remove_avatar"):
+            raise forms.ValidationError("Alege o fotografie nouă sau revenirea la avatarul implicit.")
+        return data
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email")
